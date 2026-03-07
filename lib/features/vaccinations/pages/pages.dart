@@ -1,0 +1,1 @@
+export 'vaccin_page.dart';

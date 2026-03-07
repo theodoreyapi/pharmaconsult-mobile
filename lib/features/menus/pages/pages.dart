@@ -1,0 +1,9 @@
+export 'menu_page.dart';
+export 'about_page.dart';
+export 'condition_page.dart';
+export 'help_page.dart';
+export 'mention_page.dart';
+export 'note_page.dart';
+export 'policy_page.dart';
+export 'suivi_page.dart';
+export 'notification_page.dart';
