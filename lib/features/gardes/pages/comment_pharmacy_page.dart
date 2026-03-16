@@ -55,6 +55,7 @@ class _CommentPharmacyPageState extends State<CommentPharmacyPage> {
     return Scaffold(
       backgroundColor: appWhite,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         elevation: 0,
         backgroundColor: appWhite,
         iconTheme: IconThemeData(color: appBlack),

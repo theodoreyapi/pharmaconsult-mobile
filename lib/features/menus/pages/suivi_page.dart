@@ -128,7 +128,7 @@ class _SuiviPageState extends State<SuiviPage> {
           const Divider(),
           _contactTile(Icons.phone_in_talk_outlined, "+225 27 22 25 25 47", "tel:+2252722252547"),
           _contactTile(Icons.email_outlined, "infos@pharma-consults.com", "mailto:infos@pharma-consults.com"),
-          _contactTile(Icons.location_on_outlined, "537, Rue D29 – Abidjan, CI", null),
+          _contactTile(Icons.location_on_outlined, "537, Rue D29 – Abidjan, CI", "https://maps.app.goo.gl/ocT3CSpohLaj6nX78"),
         ],
       ),
     );

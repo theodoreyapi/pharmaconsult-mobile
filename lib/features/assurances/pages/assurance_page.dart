@@ -131,7 +131,7 @@ class _AssurancePageState extends State<AssurancePage> {
     return AppBar(
       backgroundColor: appFondLogin,
       title: Text(
-        "Listes des Assurances",
+        "Liste des Assurances",
         style: TextStyle(
           color: appBlack,
           fontWeight: FontWeight.bold,

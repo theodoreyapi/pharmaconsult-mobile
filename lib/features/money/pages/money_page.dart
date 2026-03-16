@@ -208,7 +208,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
             break;
           case "ABONNEMENT":
             iconData = Icons.star;
-            iconColor = Colors.purple;
+            iconColor = appColorHtml;
             break;
           default:
             iconData = Icons.monetization_on_outlined;
@@ -277,7 +277,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                         tx.description ?? "",
                         style: TextStyle(
                           fontSize: 13.sp,
-                          color: appColorPurple,
+                          color: appColorHtml,
                         ),
                       ),
                     ],

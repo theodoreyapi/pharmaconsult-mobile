@@ -27,3 +27,19 @@ Color appColorCard = const Color(0xFFFAFAFA);
 Color appColorNavigation = const Color(0xFFD4D9D5);
 Color appColorHtml = const Color(0xFF006699);
 Color appColorPurple = const Color(0xFF9C27B0);
+
+
+Color primaryGreen = Color(0xFF2E7D32);
+Color lightGreen = Color(0xFF4CAF50);
+Color accentGreen = Color(0xFF81C784);
+Color backgroundGreen = Color(0xFFF1F8E9);
+Color cardBackground = Colors.white;
+Color textDark = Color(0xFF1B1B1B);
+Color textGrey = Color(0xFF757575);
+Color textLight = Color(0xFF9E9E9E);
+Color borderColor = Color(0xFFE0E0E0);
+Color warningYellow = Color(0xFFFFF9C4);
+Color warningBorder = Color(0xFFF9A825);
+Color errorRed = Color(0xFFD32F2F);
+Color infoBlue = Color(0xFF1976D2);
+Color infoBlueLight = Color(0xFFE3F2FD);

@@ -8,7 +8,6 @@ import 'package:sizer/sizer.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/themes/themes.dart';
 import '../../../core/utils/utils.dart';
-import '../../../core/widgets/widgets.dart';
 import '../../../models/communes/commune_model.dart';
 import '../gardes.dart';
 
@@ -291,6 +290,7 @@ class _PharmacyPageState extends State<PharmacyPage> {
             MaterialPageRoute(
               builder: (_) => PharmacyListPage(
                 identifiant: commune.id,
+                libelle: commune.name,
               ),
             ),
           );

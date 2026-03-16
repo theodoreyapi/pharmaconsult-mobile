@@ -19,7 +19,8 @@ class DetailPrixMedocPage extends StatefulWidget {
 class _DetailPrixMedocPageState extends State<DetailPrixMedocPage> {
   @override
   Widget build(BuildContext context) {
-    if (widget.medoc == null) return const Scaffold(body: Center(child: Text("Erreur de données")));
+    if (widget.medoc == null)
+      return const Scaffold(body: Center(child: Text("Erreur de données")));
 
     return Scaffold(
       backgroundColor: appWhite,
@@ -76,7 +77,8 @@ class _DetailPrixMedocPageState extends State<DetailPrixMedocPage> {
               child: Image.network(
                 widget.medoc!.medicamentPicture!,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Image.asset("assets/images/medicament.jpg"),
+                errorBuilder:
+                    (_, __, ___) => Image.asset("assets/images/medicament.jpg"),
               ),
             ),
           ),
@@ -147,10 +149,13 @@ class _DetailPrixMedocPageState extends State<DetailPrixMedocPage> {
 
   Widget _buildSubstitutesButton() {
     return InkWell(
-      onTap: () => _openModal(SubstanceMedocPage(
-        substitutes: widget.medoc!.substitutes!,
-        libelle: widget.medoc!.name!,
-      )),
+      onTap:
+          () => _openModal(
+            SubstanceMedocPage(
+              substitutes: widget.medoc!.substitutes!,
+              libelle: widget.medoc!.name!,
+            ),
+          ),
       child: Container(
         padding: EdgeInsets.all(4.w),
         decoration: BoxDecoration(
@@ -161,7 +166,7 @@ class _DetailPrixMedocPageState extends State<DetailPrixMedocPage> {
               color: appColor.withValues(alpha: 0.2),
               blurRadius: 10,
               offset: const Offset(0, 4),
-            )
+            ),
           ],
         ),
         child: Row(
@@ -170,7 +175,11 @@ class _DetailPrixMedocPageState extends State<DetailPrixMedocPage> {
             Gap(3.w),
             Text(
               "Voir les substituts génériques",
-              style: TextStyle(color: appWhite, fontWeight: FontWeight.bold, fontSize: 13.sp),
+              style: TextStyle(
+                color: appWhite,
+                fontWeight: FontWeight.bold,
+                fontSize: 13.sp,
+              ),
             ),
             Spacer(),
             Icon(Icons.arrow_forward_ios, color: appWhite, size: 16),
@@ -197,14 +206,21 @@ class _DetailPrixMedocPageState extends State<DetailPrixMedocPage> {
             children: [
               Text(
                 "Lisez attentivement ces informations avant toute utilisation. Ce guide ne remplace pas l'avis d'un professionnel de santé.",
-                style: TextStyle(color: appColor2, fontSize: 15.sp, height: 1.5),
+                style: TextStyle(
+                  color: appColor2,
+                  fontSize: 15.sp,
+                  height: 1.5,
+                ),
               ),
               const Divider(height: 30),
               TextButton.icon(
-                onPressed: () => _openModal(NoticeMedocPage(
-                  notice: widget.medoc!.notice!,
-                  libelle: widget.medoc!.name!,
-                )),
+                onPressed:
+                    () => _openModal(
+                      NoticeMedocPage(
+                        notice: widget.medoc!.notice!,
+                        libelle: widget.medoc!.name!,
+                      ),
+                    ),
                 icon: const Icon(Icons.menu_book_rounded),
                 label: const Text("Lire la notice complète"),
                 style: TextButton.styleFrom(foregroundColor: appColor),
@@ -219,15 +235,29 @@ class _DetailPrixMedocPageState extends State<DetailPrixMedocPage> {
   Widget _sectionTitle(String title) {
     return Text(
       title,
-      style: TextStyle(color: appBlack, fontSize: 13.sp, fontWeight: FontWeight.bold),
+      style: TextStyle(
+        color: appBlack,
+        fontSize: 13.sp,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 
   void _openModal(Widget page) {
     showBarModalBottomSheet(
-      expand: true,
       context: context,
-      backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
+      expand: true,
+      topControl: Align(
+        alignment: Alignment.centerLeft,
+        child: FloatingActionButton.small(
+          backgroundColor: appWhite,
+          shape: const CircleBorder(),
+          onPressed: () => Navigator.of(context).pop(),
+          child: Icon(Icons.close, color: appBlack),
+        ),
+      ),
       builder: (context) => page,
     );
   }

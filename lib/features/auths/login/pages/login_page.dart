@@ -68,11 +68,9 @@ class _LoginPageState extends State<LoginPage> {
       prefs.saveString('nom', user['firstName']),
       prefs.saveString('prenom', user['lastName']),
       prefs.saveString('phone', user['phoneNumber']),
-      prefs.saveString('pays', user['userDetails']['country'] ?? ''),
       prefs.saveDouble('wallet', (user['wallet']['amount'] ?? 0).toDouble()),
       prefs.saveInteger('walletId', user['wallet']['id'] ?? 0),
       prefs.saveString('photo', user['userDetails']['profilePicture']),
-      prefs.saveString('about', user['userDetails']['aboutMe'] ?? ''),
       prefs.saveString(
         'subscriptions',
         jsonEncode(user['subscriptions'] ?? []),

@@ -153,7 +153,9 @@ class _PrixPageState extends State<PrixPage> {
                   if (snapshot.hasError) return _buildErrorState();
 
                   return _isSearching
-                      ? const Center(child: CircularProgressIndicator.adaptive())
+                      ? const Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      )
                       : _buildListView();
                 },
               ),
@@ -324,7 +326,8 @@ class _PrixPageState extends State<PrixPage> {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Text(
-          "Une erreur est survenue lors de la récupération des prix.\n\nContactez le support si cela persiste.",
+          "Une erreur est survenue lors de la récupération des prix."
+          "\n\nContactez le support si cela persiste.",
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.grey[600]),
         ),

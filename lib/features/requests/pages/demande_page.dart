@@ -109,7 +109,7 @@ class _DemandePageState extends State<DemandePage>
       appBar: AppBar(
         backgroundColor: appFondLogin,
         title: Text(
-          "Listes des recherches",
+          "Liste des recherches",
           style: TextStyle(
             color: appBlack,
             fontWeight: FontWeight.bold,

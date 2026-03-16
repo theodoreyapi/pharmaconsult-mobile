@@ -15,8 +15,9 @@ import '../gardes.dart';
 
 class PharmacyListPage extends StatefulWidget {
   int? identifiant;
+  String? libelle;
 
-  PharmacyListPage({super.key, this.identifiant});
+  PharmacyListPage({super.key, this.identifiant, this.libelle});
 
   @override
   State<PharmacyListPage> createState() => _PharmacyListPageState();
@@ -139,7 +140,8 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
               ),
             ),
             Text(
-              "Pharmacies disponibles",
+              "Pharmacies disponibles - ${widget.libelle}",
+              maxLines: 1,
               style: TextStyle(
                 fontSize: 14.sp,
                 color: appColor2,

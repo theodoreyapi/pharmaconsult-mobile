@@ -183,13 +183,17 @@ class _ResponsePharmacyPageState extends State<ResponsePharmacyPage> {
                       }
 
                       if (snapshot.hasData) {
-
                         allPharmacies = snapshot.data!;
 
                         // Avant ton ListView, filtre les pharmacies
-                        List filteredPharmacies = allPharmacies
-                            .where((p) => p.status == "VALIDE" || p.status == "RESERVE")
-                            .toList();
+                        List filteredPharmacies =
+                            allPharmacies
+                                .where(
+                                  (p) =>
+                                      p.status == "VALIDE" ||
+                                      p.status == "RESERVE",
+                                )
+                                .toList();
 
                         // Appliquer filtre si champ recherche non vide
                         filteredPharmacies =
@@ -220,14 +224,16 @@ class _ResponsePharmacyPageState extends State<ResponsePharmacyPage> {
                         }
 
                         bool hasValidReservation = filteredPharmacies.any(
-                              (p) => p.status == "RESERVE",
+                          (p) => p.status == "RESERVE",
                         );
 
                         return ListView.builder(
                           itemCount: filteredPharmacies.length,
                           itemBuilder: (context, index) {
                             final contact = filteredPharmacies[index];
-                            final isReserved = contact.status == "RESERVE"; // tu gardes ta logique
+                            final isReserved =
+                                contact.status ==
+                                "RESERVE"; // tu gardes ta logique
 
                             return Column(
                               children: [
@@ -241,22 +247,41 @@ class _ResponsePharmacyPageState extends State<ResponsePharmacyPage> {
                                         child: Padding(
                                           padding: const EdgeInsets.all(4),
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(3.w),
+                                            borderRadius: BorderRadius.circular(
+                                              3.w,
+                                            ),
                                             child: Container(
                                               height: 87,
                                               width: 87,
                                               padding: EdgeInsets.all(4.w),
                                               color: appFondLogin,
-                                              child: (contact.pharmacy?.facadeImage != null &&
-                                                  contact.pharmacy!.facadeImage!.isNotEmpty)
-                                                  ? Image.network(
-                                                contact.pharmacy!.facadeImage!,
-                                                fit: BoxFit.contain,
-                                                errorBuilder: (context, error, stackTrace) {
-                                                  return Image.asset("assets/images/pharmacy.png");
-                                                },
-                                              )
-                                                  : Image.asset("assets/images/pharmacy.png"),
+                                              child:
+                                                  (contact
+                                                                  .pharmacy
+                                                                  ?.facadeImage !=
+                                                              null &&
+                                                          contact
+                                                              .pharmacy!
+                                                              .facadeImage!
+                                                              .isNotEmpty)
+                                                      ? Image.network(
+                                                        contact
+                                                            .pharmacy!
+                                                            .facadeImage!,
+                                                        fit: BoxFit.contain,
+                                                        errorBuilder: (
+                                                          context,
+                                                          error,
+                                                          stackTrace,
+                                                        ) {
+                                                          return Image.asset(
+                                                            "assets/images/pharmacy.png",
+                                                          );
+                                                        },
+                                                      )
+                                                      : Image.asset(
+                                                        "assets/images/pharmacy.png",
+                                                      ),
                                             ),
                                           ),
                                         ),
@@ -266,10 +291,12 @@ class _ResponsePharmacyPageState extends State<ResponsePharmacyPage> {
                                         child: Padding(
                                           padding: const EdgeInsets.all(6),
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                contact.pharmacy?.name ?? "Pharmacie inconnue",
+                                                contact.pharmacy?.name ??
+                                                    "Pharmacie inconnue",
                                                 maxLines: 2,
                                                 style: TextStyle(
                                                   fontSize: 17.sp,
@@ -279,7 +306,8 @@ class _ResponsePharmacyPageState extends State<ResponsePharmacyPage> {
                                               ),
                                               SizedBox(height: 5),
                                               Text(
-                                                contact.pharmacy?.address ?? "Adresse non disponible",
+                                                contact.pharmacy?.address ??
+                                                    "Adresse non disponible",
                                                 maxLines: 3,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
@@ -290,8 +318,11 @@ class _ResponsePharmacyPageState extends State<ResponsePharmacyPage> {
                                               ),
                                               Gap(1.h),
                                               Text(
-                                                (contact.pharmacy?.commune?.name ??
-                                                    "Commune non disponible")
+                                                (contact
+                                                            .pharmacy
+                                                            ?.commune
+                                                            ?.name ??
+                                                        "Commune non disponible")
                                                     .toUpperCase(),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -303,40 +334,53 @@ class _ResponsePharmacyPageState extends State<ResponsePharmacyPage> {
                                               ),
                                               Gap(1.h),
                                               GestureDetector(
-                                                onTap: (hasValidReservation && !isReserved)
-                                                    ? null
-                                                    : () {
-                                                  if (contact.pharmacy != null &&
-                                                      !hasValidReservation) {
-                                                    sendRequestUser(
-                                                      context,
-                                                      contact.pharmacy!.id,
-                                                      contact.requestId!,
-                                                    );
-                                                  } else {
-                                                    SnackbarHelper.showWarning(
-                                                      context,
-                                                      "Réservation impossible.",
-                                                    );
-                                                  }
-                                                },
+                                                onTap:
+                                                    (hasValidReservation &&
+                                                            !isReserved)
+                                                        ? null
+                                                        : () {
+                                                          if (contact.pharmacy !=
+                                                                  null &&
+                                                              !hasValidReservation) {
+                                                            sendRequestUser(
+                                                              context,
+                                                              contact
+                                                                  .pharmacy!
+                                                                  .id,
+                                                              contact
+                                                                  .requestId!,
+                                                            );
+                                                          } else {
+                                                            SnackbarHelper.showWarning(
+                                                              context,
+                                                              "Réservation impossible.",
+                                                            );
+                                                          }
+                                                        },
                                                 child: Container(
                                                   decoration: BoxDecoration(
-                                                    color: isReserved
-                                                        ? appColorReserve
-                                                        : hasValidReservation
-                                                        ? Colors.grey
-                                                        : appColor,
-                                                    borderRadius: BorderRadius.circular(2.w),
+                                                    color:
+                                                        isReserved
+                                                            ? appColorReserve
+                                                            : hasValidReservation
+                                                            ? Colors.grey
+                                                            : appColor,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          2.w,
+                                                        ),
                                                   ),
-                                                  padding: EdgeInsets.all(1.5.w),
+                                                  padding: EdgeInsets.all(
+                                                    1.5.w,
+                                                  ),
                                                   child: Text(
                                                     isReserved
                                                         ? "RESERVATION EFFECTUÉE"
                                                         : "RESERVATION",
                                                     style: TextStyle(
                                                       color: appWhite,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                       fontSize: 13.sp,
                                                     ),
                                                   ),

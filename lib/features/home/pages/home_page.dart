@@ -22,6 +22,7 @@ import '../../mobiles/mobiles.dart';
 import '../../prices/pages/pages.dart';
 import '../../qr/qr.dart';
 import '../../requests/search.dart';
+import '../../vaccinations/vaccins.dart';
 import '../home.dart';
 
 class HomePage extends StatefulWidget {
@@ -460,6 +461,16 @@ class _HomePageState extends State<HomePage> {
                               DemandePage(),
                               isDisabled:
                                   !isModuleActive(subs, "Recherche medicament"),
+                            ),
+                            Gap(3.w),
+                            _buildServiceItem(
+                              context,
+                              "Vaccination",
+                              "assets/svg/vaccin.svg",
+                              "Vaccination",
+                              MenuVacciPage(),
+                              isDisabled:
+                                  !isModuleActive(subs, "Vaccination"),
                             ),
                           ],
                         );

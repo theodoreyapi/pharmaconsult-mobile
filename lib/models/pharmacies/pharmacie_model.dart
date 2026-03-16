@@ -36,7 +36,7 @@ class PharmaciesModels {
     id = json['id'];
     name = json['name'];
     address = json['address'];
-    openingHours = json['openingHours'];
+    openingHours = json['openingHours'] ?? '';
     phoneNumber = json['phoneNumber'];
     whatsAppPhoneNumber = json['whatsAppPhoneNumber'];
     ownerName = json['ownerName'];

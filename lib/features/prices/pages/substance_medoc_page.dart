@@ -66,7 +66,7 @@ class _SubstanceMedocPageState extends State<SubstanceMedocPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Listes des substituts",
+                "Liste des substituts",
                 style: TextStyle(
                   color: appBlack,
                   fontWeight: FontWeight.bold,

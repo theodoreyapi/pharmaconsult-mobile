@@ -443,7 +443,7 @@ class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
                         }
                       },
                       title: Text(
-                        "Listes des Assurances acceptées",
+                        "Liste des Assurances acceptées",
                         style: TextStyle(
                           color: appWhite,
                           fontWeight: FontWeight.bold,

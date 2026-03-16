@@ -1,0 +1,1 @@
+export 'pages/menu_vacci_page.dart';
