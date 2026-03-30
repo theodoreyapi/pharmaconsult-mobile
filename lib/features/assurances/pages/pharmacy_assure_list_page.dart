@@ -8,7 +8,6 @@ import 'package:sizer/sizer.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/themes/themes.dart';
 import '../../../core/utils/utils.dart';
-import '../../../core/widgets/widgets.dart';
 import '../../../models/pharmacies/pharmacie_model.dart';
 import '../assures.dart';
 
@@ -63,14 +62,10 @@ class _PharmacyAssureListPageState extends State<PharmacyAssureListPage> {
   }
 
   Future<List<PharmaciesModels>> fetchPharmacie() async {
-    await TokenManager().refreshTokenIfExpired();
     final http.Response response = await http.get(
-      Uri.parse(
-        "${ApiUrls.getPharmaAssureUrl}${widget.identifiant}/pharmacies",
-      ),
+      Uri.parse(ApiUrls.getPharmaAssureUrl(widget.identifiant!)),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': "Bearer ${TokenManager().getBearerToken()}",
       },
     );
 
@@ -148,15 +143,16 @@ class _PharmacyAssureListPageState extends State<PharmacyAssureListPage> {
                       hintText: "Rechercher une pharmacie...",
                       border: InputBorder.none,
                       icon: Icon(Icons.search, color: appColor),
-                      suffixIcon: searchController.text.isNotEmpty
-                          ? IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          searchController.clear();
-                          _filterPharmacies();
-                        },
-                      )
-                          : null,
+                      suffixIcon:
+                          searchController.text.isNotEmpty
+                              ? IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () {
+                                  searchController.clear();
+                                  _filterPharmacies();
+                                },
+                              )
+                              : null,
                     ),
                   ),
                 ),
@@ -225,7 +221,7 @@ class _PharmacyAssureListPageState extends State<PharmacyAssureListPage> {
         backgroundColor: appColor,
         elevation: 6,
         onPressed: _refreshData,
-        child: Icon(Icons.refresh, color: Colors.white,),
+        child: Icon(Icons.refresh, color: Colors.white),
       ),
     );
   }
@@ -238,10 +234,7 @@ class _PharmacyAssureListPageState extends State<PharmacyAssureListPage> {
           context,
           MaterialPageRoute(
             builder:
-                (context) =>
-                DetailPharmacyAssurePage(
-                  pharmacy: pharmacyAssure,
-                ),
+                (context) => DetailPharmacyAssurePage(pharmacy: pharmacyAssure),
           ),
         );
       },
@@ -302,15 +295,11 @@ class _PharmacyAssureListPageState extends State<PharmacyAssureListPage> {
                     pharmacyAssure.address ?? "",
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: appColor2,
-                    ),
+                    style: TextStyle(fontSize: 13.sp, color: appColor2),
                   ),
                   Gap(1.h),
                   Text(
-                    pharmacyAssure.commune!.name!
-                        .toUpperCase(),
+                    pharmacyAssure.commune!.name!.toUpperCase(),
                     maxLines: 1,
                     style: TextStyle(
                       fontSize: 16.sp,
@@ -335,8 +324,7 @@ class _PharmacyAssureListPageState extends State<PharmacyAssureListPage> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (context) =>
-                          DetailPharmacyAssurePage(
+                          (context) => DetailPharmacyAssurePage(
                             pharmacy: pharmacyAssure,
                           ),
                     ),

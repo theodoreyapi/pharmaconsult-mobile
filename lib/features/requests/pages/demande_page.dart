@@ -47,7 +47,7 @@ class _DemandePageState extends State<DemandePage>
   Future<List<DemandeModel>> fetchRequest() async {
     final http.Response response = await http.get(
       Uri.parse(
-        "${ApiUrls.getRequestUrl}${SharedPreferencesHelper().getString('phone')}",
+        ApiUrls.getRequestUrl(SharedPreferencesHelper().getString('phone')!),
       ),
       headers: {
         'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ class _DemandePageState extends State<DemandePage>
   Future<List<ReservationModel>> fetchReserve() async {
     final http.Response response = await http.get(
       Uri.parse(
-        "${ApiUrls.getReserveRequestUrl}${SharedPreferencesHelper().getString('phone')}",
+        ApiUrls.getReserveRequestUrl(SharedPreferencesHelper().getString('phone')!),
       ),
       headers: {
         'Content-Type': 'application/json',
@@ -314,7 +314,8 @@ class _DemandePageState extends State<DemandePage>
                               ? Icons.hourglass_empty
                               : contact.status == "VALIDE"
                               ? Icons.check_circle
-                              : Icons.medical_services, // ou null si tu veux pas d'icône
+                              : Icons.medical_services,
+                          // ou null si tu veux pas d'icône
                           color: appWhite,
                           size: 18.sp, // adapte selon ton design
                         ),
@@ -324,7 +325,8 @@ class _DemandePageState extends State<DemandePage>
                               ? "DEMANDE SANS RÉPONSE"
                               : contact.status == "VALIDE"
                               ? "DEMANDE RÉPONDUE"
-                              : "MÉDICAMENT RÉSERVÉ", // ou vide si tu préfères
+                              : "MÉDICAMENT RÉSERVÉ",
+                          // ou vide si tu préfères
                           style: TextStyle(
                             color: appWhite,
                             fontSize: 14.sp,
@@ -332,7 +334,7 @@ class _DemandePageState extends State<DemandePage>
                           ),
                         ),
                       ],
-                    )
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),

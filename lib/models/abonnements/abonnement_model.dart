@@ -2,7 +2,7 @@ class AbonnementModel {
   int? id;
   String? libelle;
   String? description;
-  double? price;
+  int? price;
   int? duration;
   String? dateCreate;
   String? dateUpdate;

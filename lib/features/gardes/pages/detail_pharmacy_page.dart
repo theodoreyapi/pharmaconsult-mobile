@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating/flutter_rating.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:pharmaconsult/features/home/pages/pages.dart';
 import 'package:rating_summary/rating_summary.dart';
@@ -31,6 +32,25 @@ class DetailPharmacysPage extends StatefulWidget {
 class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
   var login = TextEditingController();
   double rating = 0;
+
+  String formatRelativeDate(String date) {
+    try {
+      DateTime parsedDate = DateTime.parse(date.replaceAll(' ', 'T'));
+      Duration diff = DateTime.now().difference(parsedDate);
+
+      if (diff.inMinutes < 60) {
+        return "Il y a ${diff.inMinutes} min";
+      } else if (diff.inHours < 24) {
+        return "Il y a ${diff.inHours} h";
+      } else if (diff.inDays < 7) {
+        return "Il y a ${diff.inDays} j";
+      } else {
+        return DateFormat('d MMM yyyy', 'fr_FR').format(parsedDate);
+      }
+    } catch (e) {
+      return date;
+    }
+  }
 
   @override
   void dispose() {
@@ -63,7 +83,7 @@ class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
                 if (widget.pharmacy!.notices != null) ...[
                   StarRating(
                     rating:
-                        widget.pharmacy!.notices!.ratingSummary!.average ?? 0,
+                        (widget.pharmacy!.notices!.ratingSummary!.average!).toDouble() ?? 0,
                     color: Colors.orange,
                     size: 13,
                   ),
@@ -94,14 +114,11 @@ class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
       body: Container(
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                appFondLogin,
-                appWhite,
-              ],
-            )
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [appFondLogin, appWhite],
+          ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
@@ -114,7 +131,7 @@ class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(3.w),
                     child: AspectRatio(
-                      aspectRatio: 16/9,
+                      aspectRatio: 16 / 9,
                       child: Image.network(
                         widget.pharmacy!.facadeImage!,
                         fit: BoxFit.cover,
@@ -174,7 +191,9 @@ class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
                       ),
                       trailing: InkWell(
                         onTap: () async {
-                          final uri = Uri.parse(widget.pharmacy!.gpsCoordinates!);
+                          final uri = Uri.parse(
+                            widget.pharmacy!.gpsCoordinates!,
+                          );
                           if (await canLaunchUrl(uri)) {
                             await launchUrl(
                               uri,
@@ -222,10 +241,15 @@ class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
                               .whatsAppPhoneNumber!
                               .replaceAll(RegExp(r'[+\s]'), '');
 
-                          final uri = Uri.parse("https://wa.me/225$cleanNumber");
+                          final uri = Uri.parse(
+                            "https://wa.me/225$cleanNumber",
+                          );
 
                           if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
                           } else {
                             final webUrl =
                                 "https://web.whatsapp.com/send?phone=225${widget.pharmacy!.whatsAppPhoneNumber}";
@@ -264,9 +288,15 @@ class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
                       Gap(4.w),
                       InkWell(
                         onTap: () async {
-                          final uri = Uri(scheme: "tel", path: widget.pharmacy!.phoneNumber);
+                          final uri = Uri(
+                            scheme: "tel",
+                            path: widget.pharmacy!.phoneNumber,
+                          );
 
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          await launchUrl(
+                            uri,
+                            mode: LaunchMode.externalApplication,
+                          );
                         },
                         child: Container(
                           padding: EdgeInsets.all(3.w),
@@ -371,7 +401,7 @@ class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
                           "phone",
                         ); // ton numéro
                         final url = Uri.parse(
-                          "${ApiUrls.getCheckByModuleSubscribeUrl}$username/Assurances",
+                          "${ApiUrls.getCheckByModuleSubscribeUrl(username!)}/Assurances",
                         );
 
                         try {
@@ -535,13 +565,15 @@ class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
                                         .toDouble(),
                                 color: Colors.orange,
                               ),
+                              Gap(2.w),
                               Text(
-                                widget
+                                formatRelativeDate(widget
                                     .pharmacy!
                                     .notices!
                                     .notices!
                                     .first
-                                    .dateNotice!,
+                                    .dateNotice ?? "")
+                                ,
                                 style: TextStyle(
                                   color: appTextTwo,
                                   fontSize: 14.sp,

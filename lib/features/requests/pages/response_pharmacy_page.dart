@@ -69,7 +69,7 @@ class _ResponsePharmacyPageState extends State<ResponsePharmacyPage> {
   Future<List<RequestPharmacy>> fetchPharmacie() async {
     await TokenManager().refreshTokenIfExpired();
     final http.Response response = await http.get(
-      Uri.parse("${ApiUrls.getRequestPharmacyUrl}${widget.pharmacie}"),
+      Uri.parse(ApiUrls.getRequestPharmacyUrl(widget.pharmacie!)),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': "Bearer ${TokenManager().getBearerToken()}",

@@ -6,7 +6,7 @@ class ApiUrls {
 
   // Base URL
   static const baseUrlProd = "http://candidat.aptiotalent.com/api";
-  static const baseUrlTest = "http://pharma-consults.com:9091";
+  static const baseUrlTest = "http://new-version.sodalite-consulting.com";
 
   // Pour obtenir la bonne base URL
   static String get baseUrl => change ? baseUrlProd : baseUrlTest;
@@ -16,7 +16,7 @@ class ApiUrls {
 
   static String get internalPharma => "$baseUrl/api/internal/v1/pharma";
   static String get internalMedicament => "$baseUrl/api/internal/v1/requests-medicament";
-  static String get internalRequest => "$baseUrl/api/internal/vi/request-pharmacies";
+  static String get internalRequest => "$baseUrl/api/internal/v1/request-pharmacies";
   static String get internalGarde => "$baseUrl/api/internal/v1/periodes-garde";
 
   // Authentication
@@ -30,26 +30,26 @@ class ApiUrls {
   // Communes
   static String get getListCity => "$internalPharma/communes/search";
   static String get postAddNotice => "$internalPharma/notices/add";
-  static String get getListNotice => "$internalPharma/notices/get/";
+  static String getListNotice(int id) => "$internalPharma/notices/get/$id";
 
-  static String get getListPharmaByCity =>
-      "$internalPharma/pharmacies/gardeIntervalByCommune?";
+  static String getListPharmaByCity(int id) =>
+      "$internalPharma/pharmacies/gardeIntervalByCommune?communeId=$id";
   static String get getListDate => internalGarde;
 
   // Médicaments
   static String get getMedicamentUrl => "$internalPharma/medicaments/search";
   static String get postRequestUrl => internalMedicament;
-  static String get getRequestUrl => "$internalMedicament/user/";
+  static String getRequestUrl(String username) => "$internalMedicament/user/$username";
   static String get postSendRequestUrl => "$internal/reservations-medicament/create";
-  static String get getRequestPharmacyUrl => "$internalRequest/request/";
-  static String get getReserveRequestUrl => "$internal/reservations-medicament/user/";
+  static String getRequestPharmacyUrl(int id) => "$internalRequest/request/$id";
+  static String getReserveRequestUrl(String username) => "$internal/reservations-medicament/user/$username";
 
   // Assurance
   static String get getAssureUrl => "$internalPharma/assurances/getAll";
-  static String get getPharmaAssureUrl => "$internalPharma/pharmacies/";
+  static String getPharmaAssureUrl(int id) => "$internalPharma/pharmacies/$id/pharmacies";
 
   // Forfaits
-  static String get getForfaitUrl => "$internalPharma/forfaits/byModuleName/";
+  static String getForfaitUrl(String forfait) => "$internalPharma/forfaits/byModuleName/$forfait";
 
   // Profile
   static String get putUpdateProfileUrl => "$internalUser/update";
@@ -63,19 +63,19 @@ class ApiUrls {
   static String get getAdsUrl => "$internal/publicites/get/actives";
 
   // Transactions
-  static String get getTransactionsUrl => "$internalPharma/operations/byUsername/";
+  static String getTransactionsUrl(String username) => "$internalPharma/operations/byUsername/$username";
   static String get postSendMoneyUrl => "$internalPharma/transfers/process";
-  static String get getCheckUserUrl => "$internal/user/getUserByUsername/";
+  static String getCheckUserUrl(String username) => "$internal/user/getUserByUsername/$username";
 
   // CINETPAY
   static String get getIntialUrl => "$internalPharma/cinetpay/payment";
   //static String get getIntialUrl => "$internalPharma/rechargements/initier";
-  static String get getCheckWalletUrl => "$internalPharma/wallet/getWalletByUserName/";
+  static String getCheckWalletUrl(String username) => "$internalPharma/wallet/getWalletByUserName/$username";
 
   // SOUSCRIPTIONS
   static String get postSubscribeUrl => "$internalPharma/subscriptions/subscribe";
-  static String get getCheckAllSubscribeUrl => "$internalPharma/subscriptions/valid/";
-  static String get getCheckByModuleSubscribeUrl => "$internalPharma/subscriptions/valid/module/";
+  static String getCheckAllSubscribeUrl(String username) => "$internalPharma/subscriptions/valid/$username";
+  static String getCheckByModuleSubscribeUrl(String username) => "$internalPharma/subscriptions/valid/module/$username";
 
   // GENERAUX
   static String get getAboutUrl => "$internalPharma/parametres-generaux/getbyType/APROPOS";

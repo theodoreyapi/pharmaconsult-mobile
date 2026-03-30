@@ -91,9 +91,10 @@ class _PrixPageState extends State<PrixPage> {
       Uri.parse(ApiUrls.getMedicamentUrl),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': "Bearer ${TokenManager().getBearerToken()}",
       },
     );
+
+    print(ApiUrls.getMedicamentUrl);
 
     if (response.statusCode == 200) {
       final data = json.decode(utf8.decode(response.bodyBytes));
@@ -111,7 +112,6 @@ class _PrixPageState extends State<PrixPage> {
       Uri.parse("${ApiUrls.getMedicamentUrl}?name=$query"),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': "Bearer ${TokenManager().getBearerToken()}",
       },
     );
 

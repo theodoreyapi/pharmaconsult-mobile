@@ -101,7 +101,11 @@ class _MobileAmountPageState extends State<MobileAmountPage> {
 
     try {
       final url = Uri.parse(
-        "${ApiUrls.getCheckUserUrl}${widget.phoneNumber!.contains('@') ? widget.phoneNumber! : formatPhoneNumber(widget.phoneNumber!)}",
+        ApiUrls.getCheckUserUrl(
+          widget.phoneNumber!.contains('@')
+              ? widget.phoneNumber!
+              : formatPhoneNumber(widget.phoneNumber!),
+        ),
       );
 
       final res = await http.get(

@@ -12,7 +12,7 @@ class WalletService {
     // Appel toutes les 5 secondes
     _timer = Timer.periodic(Duration(seconds: 10), (_) async {
       final url = Uri.parse(
-        "${ApiUrls.getCheckWalletUrl}${SharedPreferencesHelper().getString('phone')}",
+        ApiUrls.getCheckWalletUrl(SharedPreferencesHelper().getString('phone')!),
       );
 
       final response = await http.get(url);

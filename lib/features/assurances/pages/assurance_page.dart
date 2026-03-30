@@ -73,9 +73,12 @@ class _AssurancePageState extends State<AssurancePage> {
         Uri.parse(ApiUrls.getAssureUrl),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': "Bearer ${TokenManager().getBearerToken()}",
         },
       );
+
+      print(ApiUrls.getAssureUrl);
+      print(response.statusCode);
+      debugPrint(response.body);
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));

@@ -131,7 +131,7 @@ class _AssurePharmacyPageState extends State<AssurePharmacyPage> {
             width: double.infinity,
             decoration: BoxDecoration(
               color: appWhite,
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(3.w),
               border: Border.all(color: appColorDivider.withValues(alpha: 0.5)),
               boxShadow: [
                 BoxShadow(
@@ -160,7 +160,7 @@ class _AssurePharmacyPageState extends State<AssurePharmacyPage> {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: appBlack,
-            fontSize: 10.sp,
+            fontSize: 13.sp,
             fontWeight: FontWeight.w600,
           ),
         ),

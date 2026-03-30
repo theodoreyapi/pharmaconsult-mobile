@@ -58,12 +58,10 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
   }
 
   Future<List<PharmaciesModels>> fetchGarde() async {
-    await TokenManager().refreshTokenIfExpired();
     final http.Response response = await http.get(
       Uri.parse(ApiUrls.getListDate),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': "Bearer ${TokenManager().getBearerToken()}",
       },
     );
 
@@ -73,14 +71,16 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
       );
 
       try {
-        afficheOne = contentList[0]["dateDebut"];
-        afficheTwo = contentList[0]["dateFin"];
+        if (contentList.isNotEmpty) {
+          afficheOne = contentList[0]["date_debut"];
+          afficheTwo = contentList[0]["date_fin"];
+        }
 
         _futurePharmacies = fetchPharmacie();
 
         return await fetchPharmacie();
       } catch (e) {
-        throw Exception("Erreur lors de la conversion JSON");
+        throw Exception("Erreur lors de la conversion JSON: $e");
       }
     } else {
       throw Exception("Une erreur s'est produite");
@@ -88,14 +88,10 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
   }
 
   Future<List<PharmaciesModels>> fetchPharmacie() async {
-    await TokenManager().refreshTokenIfExpired();
     final http.Response response = await http.get(
-      Uri.parse(
-        "${ApiUrls.getListPharmaByCity}communeId=${widget.identifiant}",
-      ),
+      Uri.parse(ApiUrls.getListPharmaByCity(widget.identifiant!)),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': "Bearer ${TokenManager().getBearerToken()}",
       },
     );
 
@@ -114,7 +110,7 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
                 .toList();
         return pharmacies;
       } catch (e) {
-        throw Exception("Erreur lors de la conversion JSON");
+        throw Exception("Erreur lors de la conversion JSON $e");
       }
     } else {
       throw Exception("Une erreur s'est produite");
@@ -142,10 +138,7 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
             Text(
               "Pharmacies disponibles - ${widget.libelle}",
               maxLines: 1,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: appColor2,
-              ),
+              style: TextStyle(fontSize: 14.sp, color: appColor2),
             ),
           ],
         ),
@@ -186,15 +179,16 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
                       hintText: "Rechercher une pharmacie...",
                       border: InputBorder.none,
                       icon: Icon(Icons.search, color: appColor),
-                      suffixIcon: searchController.text.isNotEmpty
-                          ? IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          searchController.clear();
-                          _filterPharmacies();
-                        },
-                      )
-                          : null,
+                      suffixIcon:
+                          searchController.text.isNotEmpty
+                              ? IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () {
+                                  searchController.clear();
+                                  _filterPharmacies();
+                                },
+                              )
+                              : null,
                     ),
                   ),
                 ),
@@ -237,10 +231,10 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
                         }
 
                         DateTime parsedDate = DateFormat(
-                          "yyyy-MM-dd'T'HH:mm:ss",
+                          "yyyy-MM-dd HH:mm:ss",
                         ).parse(afficheOne);
                         DateTime parsedDateTwo = DateFormat(
-                          "yyyy-MM-dd'T'HH:mm:ss",
+                          "yyyy-MM-dd HH:mm:ss",
                         ).parse(afficheTwo);
 
                         return Column(
@@ -287,7 +281,7 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
           Expanded(
             child: Text(
               "Garde du ${DateFormat('EEE d MMM', 'fr_FR').format(start)} "
-                  "au ${DateFormat('EEE d MMM yyyy', 'fr_FR').format(end)}",
+              "au ${DateFormat('EEE d MMM yyyy', 'fr_FR').format(end)}",
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
@@ -307,9 +301,7 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => DetailPharmacysPage(
-              pharmacy: pharmacy,
-            ),
+            builder: (_) => DetailPharmacysPage(pharmacy: pharmacy),
           ),
         );
       },
@@ -370,10 +362,7 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
                     pharmacy.address ?? "",
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: appColor2,
-                    ),
+                    style: TextStyle(fontSize: 13.sp, color: appColor2),
                   ),
                 ],
               ),
@@ -391,9 +380,7 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => DetailPharmacysPage(
-                        pharmacy: pharmacy,
-                      ),
+                      builder: (_) => DetailPharmacysPage(pharmacy: pharmacy),
                     ),
                   );
                 },

@@ -188,7 +188,7 @@ class _RegisterPageState extends State<RegisterPage> {
       padding: EdgeInsets.only(left: 4.w),
       decoration: BoxDecoration(
         color: appFondLogin,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(3.w),
         border: Border.all(
           color: _isPhoneFocused ? appColor : Colors.transparent,
           width: 1.5,

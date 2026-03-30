@@ -71,7 +71,7 @@ class Notices {
 
 class Rating {
   int? counter;
-  double? average;
+  int? average;
   int? counterFiveStars;
   int? counterFourStars;
   int? counterThreeStars;

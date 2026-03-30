@@ -37,7 +37,9 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
   Future<List<TransactionsModel>> fetchRequestTransactions() async {
     final http.Response response = await http.get(
       Uri.parse(
-        "${ApiUrls.getTransactionsUrl}${SharedPreferencesHelper().getString('phone')}",
+        ApiUrls.getTransactionsUrl(
+          SharedPreferencesHelper().getString('phone')!,
+        ),
       ),
       headers: {
         'Content-Type': 'application/json',
@@ -179,14 +181,13 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
 
   Widget buildTransactionsList(List<TransactionsModel> transactions) {
     if (transactions.isEmpty) {
-      return const Center(
-        child: Text("Aucune transaction disponible"),
-      );
+      return const Center(child: Text("Aucune transaction disponible"));
     }
 
     // Tri par date décroissante
-    transactions.sort((a, b) => DateTime.parse(b.date!)
-        .compareTo(DateTime.parse(a.date!)));
+    transactions.sort(
+      (a, b) => DateTime.parse(b.date!).compareTo(DateTime.parse(a.date!)),
+    );
 
     return ListView.builder(
       itemCount: transactions.length,
@@ -236,11 +237,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
               CircleAvatar(
                 radius: 20.sp,
                 backgroundColor: iconColor.withValues(alpha: 0.2),
-                child: Icon(
-                  iconData,
-                  size: 18.sp,
-                  color: iconColor,
-                ),
+                child: Icon(iconData, size: 18.sp, color: iconColor),
               ),
               Gap(3.w),
               // Infos principales
@@ -259,10 +256,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                     if (tx.designation == "TRANSFERT") ...[
                       Text(
                         tx.nameOfSecondParty ?? "",
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: appColorBlue,
-                        ),
+                        style: TextStyle(fontSize: 14.sp, color: appColorBlue),
                       ),
                       Text(
                         tx.description ?? "",
@@ -275,10 +269,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                     if (tx.designation == "ABONNEMENT") ...[
                       Text(
                         tx.description ?? "",
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          color: appColorHtml,
-                        ),
+                        style: TextStyle(fontSize: 13.sp, color: appColorHtml),
                       ),
                     ],
                     Text(
@@ -305,10 +296,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                   ),
                   Text(
                     "FCFA",
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.grey[700],
-                    ),
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
                   ),
                 ],
               ),

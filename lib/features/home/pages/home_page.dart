@@ -129,7 +129,6 @@ class _HomePageState extends State<HomePage> {
       Uri.parse(ApiUrls.getAdsUrl),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': "Bearer ${TokenManager().getBearerToken()}",
       },
     );
     if (response.statusCode == 200) {
@@ -153,7 +152,7 @@ class _HomePageState extends State<HomePage> {
   Future<List<Subscription>> fetchSubscriptions() async {
     final response = await http.get(
       Uri.parse(
-        "${ApiUrls.getCheckAllSubscribeUrl}${SharedPreferencesHelper().getString("phone")}",
+        ApiUrls.getCheckAllSubscribeUrl(SharedPreferencesHelper().getString("phone")!),
       ),
       headers: {'Content-Type': 'application/json'},
     );
@@ -614,7 +613,7 @@ class _HomePageState extends State<HomePage> {
             "phone",
           ); // ton numéro
           final url = Uri.parse(
-            "${ApiUrls.getCheckByModuleSubscribeUrl}$username/$argument",
+            "${ApiUrls.getCheckByModuleSubscribeUrl(username!)}/$argument",
           );
 
           try {

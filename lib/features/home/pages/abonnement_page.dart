@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -36,13 +37,15 @@ class _AbonnementPageState extends State<AbonnementPage> {
   Future<List<AbonnementModel>> fetchAssure() async {
     final http.Response response = await http.get(
       Uri.parse(
-        "${ApiUrls.getForfaitUrl}${widget.argument!.replaceAll(" ", "%20")}",
+        ApiUrls.getForfaitUrl(widget.argument!.replaceAll(" ", "%20")),
       ),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': "Bearer ${TokenManager().getBearerToken()}",
       },
     );
+
+    print(ApiUrls.getForfaitUrl(widget.argument!.replaceAll(" ", "%20")));
+    debugPrint(response.body);
 
     if (response.statusCode == 200) {
       final List<dynamic> contentList = json.decode(
@@ -60,10 +63,10 @@ class _AbonnementPageState extends State<AbonnementPage> {
 
         return communes;
       } catch (e) {
-        throw Exception("Erreur lors de la conversion JSON");
+        throw Exception("Erreur lors de la conversion JSON $e");
       }
     } else {
-      throw Exception("Une erreur s'est produite");
+      throw Exception("Une erreur s'est produite $e");
     }
   }
 

@@ -46,7 +46,7 @@ class _DetailPharmacyAssurePageState extends State<DetailPharmacyAssurePage> {
                 if (widget.pharmacy!.notices != null) ...[
                   StarRating(
                     rating:
-                        widget.pharmacy!.notices!.ratingSummary!.average ?? 0,
+                        (widget.pharmacy!.notices!.ratingSummary!.average!).toDouble() ?? 0,
                     color: Colors.orange,
                     size: 13,
                   ),

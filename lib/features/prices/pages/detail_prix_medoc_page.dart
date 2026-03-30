@@ -19,8 +19,9 @@ class DetailPrixMedocPage extends StatefulWidget {
 class _DetailPrixMedocPageState extends State<DetailPrixMedocPage> {
   @override
   Widget build(BuildContext context) {
-    if (widget.medoc == null)
+    if (widget.medoc == null) {
       return const Scaffold(body: Center(child: Text("Erreur de données")));
+    }
 
     return Scaffold(
       backgroundColor: appWhite,
@@ -205,7 +206,8 @@ class _DetailPrixMedocPageState extends State<DetailPrixMedocPage> {
           child: Column(
             children: [
               Text(
-                "Lisez attentivement ces informations avant toute utilisation. Ce guide ne remplace pas l'avis d'un professionnel de santé.",
+                "Lisez attentivement ces informations avant toute utilisation. "
+                "Ce guide ne remplace pas l'avis d'un professionnel de santé.",
                 style: TextStyle(
                   color: appColor2,
                   fontSize: 15.sp,

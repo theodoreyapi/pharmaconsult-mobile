@@ -8,29 +8,30 @@ class PharmaciesModels {
   String? ownerName;
   String? facadeImage;
   String? gpsCoordinates;
-  int? startGardeDate;
-  int? endGardeDate;
+  String? startGardeDate;
+  String? endGardeDate;
   Commune? commune;
   Notices? notices;
   List<PaymentMethods>? paymentMethods;
   List<Assurances>? assurances;
 
-  PharmaciesModels(
-      {this.id,
-        this.name,
-        this.address,
-        this.openingHours,
-        this.phoneNumber,
-        this.whatsAppPhoneNumber,
-        this.ownerName,
-        this.facadeImage,
-        this.gpsCoordinates,
-        this.startGardeDate,
-        this.endGardeDate,
-        this.commune,
-        this.notices,
-        this.paymentMethods,
-        this.assurances});
+  PharmaciesModels({
+    this.id,
+    this.name,
+    this.address,
+    this.openingHours,
+    this.phoneNumber,
+    this.whatsAppPhoneNumber,
+    this.ownerName,
+    this.facadeImage,
+    this.gpsCoordinates,
+    this.startGardeDate,
+    this.endGardeDate,
+    this.commune,
+    this.notices,
+    this.paymentMethods,
+    this.assurances,
+  });
 
   PharmaciesModels.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -45,9 +46,9 @@ class PharmaciesModels {
     startGardeDate = json['startGardeDate'];
     endGardeDate = json['endGardeDate'];
     commune =
-    json['commune'] != null ? Commune.fromJson(json['commune']) : null;
+        json['commune'] != null ? Commune.fromJson(json['commune']) : null;
     notices =
-    json['notices'] != null ? Notices.fromJson(json['notices']) : null;
+        json['notices'] != null ? Notices.fromJson(json['notices']) : null;
     if (json['paymentMethods'] != null) {
       paymentMethods = <PaymentMethods>[];
       json['paymentMethods'].forEach((v) {
@@ -82,8 +83,7 @@ class PharmaciesModels {
       data['notices'] = notices!.toJson();
     }
     if (paymentMethods != null) {
-      data['paymentMethods'] =
-          paymentMethods!.map((v) => v.toJson()).toList();
+      data['paymentMethods'] = paymentMethods!.map((v) => v.toJson()).toList();
     }
     if (assurances != null) {
       data['assurances'] = assurances!.map((v) => v.toJson()).toList();
@@ -127,9 +127,10 @@ class Notices {
         notices!.add(NoticesItem.fromJson(v));
       });
     }
-    ratingSummary = json['ratingSummary'] != null
-        ? Rating.fromJson(json['ratingSummary'])
-        : null;
+    ratingSummary =
+        json['ratingSummary'] != null
+            ? Rating.fromJson(json['ratingSummary'])
+            : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -153,14 +154,15 @@ class NoticesItem {
   String? details;
   int? pharmacyId;
 
-  NoticesItem(
-      {this.id,
-        this.note,
-        this.userName,
-        this.userPicture,
-        this.dateNotice,
-        this.details,
-        this.pharmacyId});
+  NoticesItem({
+    this.id,
+    this.note,
+    this.userName,
+    this.userPicture,
+    this.dateNotice,
+    this.details,
+    this.pharmacyId,
+  });
 
   NoticesItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -187,21 +189,22 @@ class NoticesItem {
 
 class Rating {
   int? counter;
-  double? average;
+  int? average;
   int? counterFiveStars;
   int? counterFourStars;
   int? counterThreeStars;
   int? counterTwoStars;
   int? counterOneStars;
 
-  Rating(
-      {this.counter,
-        this.average,
-        this.counterFiveStars,
-        this.counterFourStars,
-        this.counterThreeStars,
-        this.counterTwoStars,
-        this.counterOneStars});
+  Rating({
+    this.counter,
+    this.average,
+    this.counterFiveStars,
+    this.counterFourStars,
+    this.counterThreeStars,
+    this.counterTwoStars,
+    this.counterOneStars,
+  });
 
   Rating.fromJson(Map<String, dynamic> json) {
     counter = json['counter'] ?? 0;
@@ -232,7 +235,12 @@ class PaymentMethods {
   String? description;
   String? paymentMethodPicture;
 
-  PaymentMethods({this.id, this.name, this.description, this.paymentMethodPicture});
+  PaymentMethods({
+    this.id,
+    this.name,
+    this.description,
+    this.paymentMethodPicture,
+  });
 
   PaymentMethods.fromJson(Map<String, dynamic> json) {
     id = json['id'];

@@ -38,23 +38,16 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _navigateToNextScreen() async {
     String? nom = SharedPreferencesHelper().getString('nom');
-    if (nom != null) {
-      await TokenManager().refreshTokenIfExpired();
-      String? token = TokenManager().getBearerToken();
-      if (token != null && token.isNotEmpty) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const AuthScreen()),
-        );
-      } else {
-        SnackbarHelper.showError(
-          context,
-          "Impossible de synchroniser vos données. Veuillez vous reconnecter.",
-        );
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const IntroPage()),
-        );
-      }
+
+    if (!mounted) return;
+
+    if (nom != null && nom.isNotEmpty) {
+      // Utilisateur déjà connu
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const AuthScreen()),
+      );
     } else {
+      // Nouvel utilisateur
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const IntroPage()),
       );

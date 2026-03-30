@@ -59,18 +59,15 @@ class _LoginPageState extends State<LoginPage> {
     final prefs = SharedPreferencesHelper();
 
     await Future.wait([
-      prefs.saveString('bearerToken', data['token']['token']),
       prefs.saveString('password', passwordController.text),
-      prefs.saveString('lastRefreshTime', DateTime.now().toIso8601String()),
       prefs.saveString('identifiant', user['id'].toString()),
       prefs.saveString('username', user['username']),
       prefs.saveString('email', user['email']),
       prefs.saveString('nom', user['firstName']),
       prefs.saveString('prenom', user['lastName']),
       prefs.saveString('phone', user['phoneNumber']),
-      prefs.saveDouble('wallet', (user['wallet']['amount'] ?? 0).toDouble()),
-      prefs.saveInteger('walletId', user['wallet']['id'] ?? 0),
-      prefs.saveString('photo', user['userDetails']['profilePicture']),
+      prefs.saveDouble('wallet', (user['amount'] ?? 0).toDouble()),
+      prefs.saveString('photo', user['profilePicture']),
       prefs.saveString(
         'subscriptions',
         jsonEncode(user['subscriptions'] ?? []),

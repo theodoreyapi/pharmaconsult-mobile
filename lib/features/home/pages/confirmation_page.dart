@@ -27,7 +27,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   @override
   Widget build(BuildContext context) {
     double wallet = SharedPreferencesHelper().getDouble('wallet') ?? 0.0;
-    double price = widget.abonnement!.price ?? 0.0;
+    double price = (widget.abonnement!.price ?? 0.0).toDouble();
 
     bool hasEnoughMoney = wallet >= price;
 

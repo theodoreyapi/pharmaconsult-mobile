@@ -17,7 +17,6 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await SharedPreferencesHelper().init();
-  await TokenManager().initTokenFromLocal();
 
   var connectivityResult = await Connectivity().checkConnectivity();
 
