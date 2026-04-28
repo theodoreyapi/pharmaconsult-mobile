@@ -8,6 +8,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:pharmaconsult/features/auths/login/login.dart';
+import 'package:pharmaconsult/features/notification_overlay.dart';
 import 'package:pharmaconsult/models/publicities/publicities_model.dart';
 import 'package:sizer/sizer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -54,12 +56,15 @@ class _HomePageState extends State<HomePage> {
     _publicitiesFuture = fetchRequest();
     _fetchSubscriptions = fetchSubscriptions();
 
-    walletService.startListening((newAmount) {
-      setState(() {
-        wallet = newAmount;
-        SharedPreferencesHelper().saveDouble("wallet", wallet);
+    final phone = SharedPreferencesHelper().getString("phone");
+    if (phone != null && phone.isNotEmpty) {
+      walletService.startListening((newAmount) {
+        setState(() {
+          wallet = newAmount;
+          SharedPreferencesHelper().saveDouble("wallet", wallet);
+        });
       });
-    });
+    }
 
     _pageController = PageController();
     setupNotifications();
@@ -89,6 +94,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void setupNotifications() async {
+    final phone = SharedPreferencesHelper().getString("phone");
+    if (phone == null || phone.isEmpty) return;
+
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       badge: true,
@@ -99,10 +107,8 @@ class _HomePageState extends State<HomePage> {
       String? token;
 
       if (Platform.isAndroid) {
-        // ✅ Android : on récupère directement le token FCM
         token = await messaging.getToken();
       } else if (Platform.isIOS) {
-        // ✅ iOS : attendre l’APNs token (max 3 sec)
         String? apnsToken;
         int retry = 0;
         while (apnsToken == null && retry < 10) {
@@ -110,26 +116,35 @@ class _HomePageState extends State<HomePage> {
           await Future.delayed(const Duration(milliseconds: 300));
           retry++;
         }
-
         if (apnsToken != null) {
           token = await messaging.getToken();
-        } else {}
+        }
       }
 
       await sendTokenToBackend(token);
-    } else {}
+    }
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {});
+    // ✅ Foreground — afficher le banner overlay
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      final notification = message.notification;
+      if (notification != null && mounted) {
+        NotificationOverlay.show(
+          context,
+          title: notification.title ?? 'Notification',
+          body: notification.body ?? '',
+        );
+      }
+    });
 
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {});
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      // Gérer la navigation si besoin
+    });
   }
 
   Future<List<PublicitiesModel>> fetchRequest() async {
     final http.Response response = await http.get(
       Uri.parse(ApiUrls.getAdsUrl),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 200) {
       final List<dynamic> jsonResponse = json.decode(
@@ -150,10 +165,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<List<Subscription>> fetchSubscriptions() async {
+    final phone = SharedPreferencesHelper().getString("phone");
+
+    // Si pas connecté, retourner une liste vide sans appel API
+    if (phone == null || phone.isEmpty) return [];
+
     final response = await http.get(
-      Uri.parse(
-        ApiUrls.getCheckAllSubscribeUrl(SharedPreferencesHelper().getString("phone")!),
-      ),
+      Uri.parse(ApiUrls.getCheckAllSubscribeUrl(phone)),
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -185,7 +203,11 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isLoggedIn =
+        (SharedPreferencesHelper().getString("phone") ?? "").isNotEmpty;
+
     double wallet = SharedPreferencesHelper().getDouble('wallet') ?? 0.0;
+
     return Scaffold(
       body: Container(
         height: MediaQuery.of(context).size.height,
@@ -205,276 +227,277 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [appColor, appColorVertJaune],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  if (isLoggedIn) ...[
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [appColor, appColorVertJaune],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(3.w)),
                       ),
-                      borderRadius: BorderRadius.all(Radius.circular(3.w)),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            trailing: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => QrScannePage(),
+                                  ),
+                                );
+                              },
+                              child: Icon(
+                                Icons.qr_code_scanner_outlined,
+                                color: appWhite,
+                                size: 12.w,
+                              ),
+                            ),
+                            title: Text(
+                              "Compte principal",
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                color: appWhite,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                            subtitle: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _isVisible = !_isVisible;
+                                });
+                              },
+                              child: Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text:
+                                              _isVisible
+                                                  ? wallet.toStringAsFixed(2)
+                                                  : "****",
+                                          style: TextStyle(
+                                            color: appWhite,
+                                            fontSize: 22.sp,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: "F",
+                                          style: TextStyle(
+                                            color: appWhite,
+                                            fontSize: 18.sp,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    WidgetSpan(child: SizedBox(width: 4.w)),
+                                    WidgetSpan(
+                                      child: Icon(
+                                        _isVisible
+                                            ? Icons.visibility_outlined
+                                            : Icons.visibility_off_outlined,
+                                        color: appWhite,
+                                        size: 5.w,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Divider(
+                            indent: 4.w,
+                            endIndent: 4.w,
+                            color: appFondLogin,
+                          ),
+                          IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: ListTile(
+                                    horizontalTitleGap: 5.0,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => MobileBenefPage(),
+                                        ),
+                                      );
+                                    },
+                                    leading: CircleAvatar(
+                                      radius: 4.w,
+                                      backgroundColor: appIndicator,
+                                      child: Icon(
+                                        Icons.swap_horiz_outlined,
+                                        color: appBlack,
+                                        size: 5.w,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      "TRANSFERER DE LA MONNAIE",
+                                      textAlign: TextAlign.start,
+                                      style: TextStyle(
+                                        color: appTextTree,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13.sp,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                VerticalDivider(color: appFondLogin),
+                                Expanded(
+                                  child: ListTile(
+                                    horizontalTitleGap: 5.0,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => MobileAmountPage(),
+                                        ),
+                                      );
+                                    },
+                                    leading: CircleAvatar(
+                                      radius: 4.w,
+                                      backgroundColor: appIndicator,
+                                      child: Icon(
+                                        Icons.account_balance_wallet_outlined,
+                                        color: appColor,
+                                        size: 5.w,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      "RECHARGER MON COMPTE",
+                                      textAlign: TextAlign.start,
+                                      style: TextStyle(
+                                        color: appTextTree,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13.sp,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Column(
+                    Gap(2.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ListTile(
-                          trailing: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const QrScannePage(),
-                                ),
-                              );
-                            },
-                            child: Icon(
-                              Icons.qr_code_scanner_outlined,
-                              color: appWhite,
-                              size: 12.w,
-                            ),
-                          ),
-                          title: Text(
-                            "Compte principal",
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              color: appWhite,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12.sp,
-                            ),
-                          ),
-                          subtitle: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _isVisible = !_isVisible;
-                              });
-                            },
-                            child: Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text:
-                                            _isVisible
-                                                ? wallet.toStringAsFixed(2)
-                                                : "****",
-                                        style: TextStyle(
-                                          color: appWhite,
-                                          fontSize: 22.sp,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: "F",
-                                        style: TextStyle(
-                                          color: appWhite,
-                                          fontSize: 18.sp,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  WidgetSpan(child: SizedBox(width: 4.w)),
-                                  WidgetSpan(
-                                    child: Icon(
-                                      _isVisible
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
-                                      color: appWhite,
-                                      size: 5.w,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                        Text(
+                          "Services",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: appBlack,
                           ),
                         ),
-                        Divider(
-                          indent: 4.w,
-                          endIndent: 4.w,
-                          color: appFondLogin,
-                        ),
-                        IntrinsicHeight(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: ListTile(
-                                  horizontalTitleGap: 5.0,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => MobileBenefPage(),
-                                      ),
-                                    );
-                                  },
-                                  leading: CircleAvatar(
-                                    radius: 4.w,
-                                    backgroundColor: appIndicator,
-                                    child: Icon(
-                                      Icons.swap_horiz_outlined,
-                                      color: appBlack,
-                                      size: 5.w,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    "TRANSFERER DE LA MONNAIE",
-                                    textAlign: TextAlign.start,
-                                    style: TextStyle(
-                                      color: appTextTree,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13.sp,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              VerticalDivider(color: appFondLogin),
-                              Expanded(
-                                child: ListTile(
-                                  horizontalTitleGap: 5.0,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) => MobileAmountPage(),
-                                      ),
-                                    );
-                                  },
-                                  leading: CircleAvatar(
-                                    radius: 4.w,
-                                    backgroundColor: appIndicator,
-                                    child: Icon(
-                                      Icons.account_balance_wallet_outlined,
-                                      color: appColor,
-                                      size: 5.w,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    "RECHARGER MON COMPTE",
-                                    textAlign: TextAlign.start,
-                                    style: TextStyle(
-                                      color: appTextTree,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13.sp,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Gap(2.h),
                       ],
                     ),
-                  ),
-                  Gap(2.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Services",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: appBlack,
-                        ),
-                      ),
-                      // InkWell(
-                      //   onTap: () {
-                      //     Navigator.push(
-                      //       context,
-                      //       MaterialPageRoute(
-                      //         builder: (context) => ServicePage(),
-                      //       ),
-                      //     );
-                      //   },
-                      //   child: Text(
-                      //     "Tout voir >",
-                      //     style: TextStyle(
-                      //       fontWeight: FontWeight.w500,
-                      //       color: appColor2,
-                      //       fontSize: 14.sp,
-                      //     ),
-                      //   ),
-                      // ),
-                    ],
-                  ),
+                  ],
                   Gap(1.h),
-                  SizedBox(
-                    height: 150,
-                    child: FutureBuilder<List<Subscription>>(
-                      future: _fetchSubscriptions,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        } else if (snapshot.hasError) {
-                          return const Center(
-                            child: Text("Erreur de chargement"),
-                          );
-                        }
+                  FutureBuilder<List<PublicitiesModel>>(
+                    future: _publicitiesFuture,
+                    builder: (context, adsSnapshot) {
+                      final bool hasAds =
+                          adsSnapshot.hasData && adsSnapshot.data!.isNotEmpty;
 
-                        // Toujours une liste non nulle
-                        final List<Subscription> subs = snapshot.data ?? [];
+                      return FutureBuilder<List<Subscription>>(
+                        future: _fetchSubscriptions,
+                        builder: (context, subsSnapshot) {
+                          final List<Subscription> subs =
+                              subsSnapshot.data ?? [];
 
-                        return ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            _buildServiceItem(
-                              context,
-                              "Pharmacie \nde garde",
-                              "assets/svg/pharmacy.svg",
-                              "Pharmacie de garde",
-                              PharmacyPage(),
+                          final services = [
+                            _ServiceItem(
+                              title: "Pharmacie \nde garde",
+                              assetPath: "assets/svg/pharmacy.svg",
+                              argument: "Pharmacie de garde",
+                              page: PharmacyPage(),
+                              isDisabled: false,
                             ),
-                            Gap(3.w),
-                            _buildServiceItem(
-                              context,
-                              "Fiche et prix\nde médicament",
-                              "assets/svg/medoc.svg",
-                              "Fiche et prix",
-                              PrixPage(),
+                            _ServiceItem(
+                              title: "Fiche et prix\nde médicament",
+                              assetPath: "assets/svg/medoc.svg",
+                              argument: "Fiche et prix",
+                              page: PrixPage(),
                               isDisabled:
                                   !isModuleActive(subs, "Fiche et prix"),
                             ),
-                            Gap(3.w),
-                            _buildServiceItem(
-                              context,
-                              "Assurances",
-                              "assets/svg/assure.svg",
-                              "Assurances",
-                              AssurancePage(),
+                            _ServiceItem(
+                              title: "Assurances",
+                              assetPath: "assets/svg/assure.svg",
+                              argument: "Assurances",
+                              page: AssurancePage(),
                               isDisabled: !isModuleActive(subs, "Assurances"),
                             ),
-                            Gap(3.w),
-                            _buildServiceItem(
-                              context,
-                              "Recherche de\nmédicament",
-                              "assets/svg/search.svg",
-                              "Recherche medicament",
-                              DemandePage(),
-                              isDisabled:
-                                  !isModuleActive(subs, "Recherche medicament"),
+                          ];
+
+                          // 📌 GRIDVIEW si pas de publicités
+                          if (!hasAds) {
+                            return GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3,
+                                    crossAxisSpacing: 10,
+                                    mainAxisSpacing: 10,
+                                    childAspectRatio: 0.7,
+                                  ),
+                              itemCount: services.length,
+                              itemBuilder: (context, index) {
+                                final s = services[index];
+                                return _buildServiceItem(
+                                  context,
+                                  s.title,
+                                  s.assetPath,
+                                  s.argument,
+                                  s.page,
+                                  isDisabled: s.isDisabled,
+                                  isLoggedIn: isLoggedIn,
+                                );
+                              },
+                            );
+                          }
+
+                          // 📌 LISTVIEW horizontal si publicités présentes
+                          return SizedBox(
+                            height: 150,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: services.length,
+                              separatorBuilder: (_, __) => Gap(3.w),
+                              itemBuilder: (context, index) {
+                                final s = services[index];
+                                return _buildServiceItem(
+                                  context,
+                                  s.title,
+                                  s.assetPath,
+                                  s.argument,
+                                  s.page,
+                                  isDisabled: s.isDisabled,
+                                  isLoggedIn: isLoggedIn,
+                                );
+                              },
                             ),
-                            Gap(3.w),
-                            _buildServiceItem(
-                              context,
-                              "Vaccination",
-                              "assets/svg/vaccin.svg",
-                              "Vaccination",
-                              MenuVacciPage(),
-                              isDisabled:
-                                  !isModuleActive(subs, "Vaccination"),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      );
+                    },
                   ),
                   Gap(2.h),
                   SizedBox(
@@ -498,9 +521,7 @@ class _HomePageState extends State<HomePage> {
                           );
                         } else if (!snapshot.hasData ||
                             snapshot.data!.isEmpty) {
-                          return const Center(
-                            child: Text("Aucune publicité disponible"),
-                          );
+                          return SizedBox.shrink();
                         }
 
                         final publicities = snapshot.data!;
@@ -576,19 +597,29 @@ class _HomePageState extends State<HomePage> {
     String argument,
     Widget pageToOpen, {
     bool isDisabled = false,
+    bool isLoggedIn = true, // 👈 nouveau paramètre
   }) {
     return InkWell(
       onTap: () async {
-        // Cas spécial : Pharmacie de garde (toujours accessible)
+        // ✅ Cas 1 : Pharmacie de garde — toujours accessible
         if (argument == "Pharmacie de garde") {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => pageToOpen),
           );
-          return; // on sort pour ne pas exécuter le reste
+          return;
         }
 
-        // Pour les autres modules : contrôle abonnement
+        // ✅ Cas 2 : Pas connecté → page de connexion
+        if (!isLoggedIn) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => LoginPage()),
+          );
+          return;
+        }
+
+        // ✅ Cas 3 : Connecté mais abonnement inactif → AbonnementPage
         if (isDisabled) {
           showBarModalBottomSheet(
             isDismissible: false,
@@ -607,58 +638,59 @@ class _HomePageState extends State<HomePage> {
             builder:
                 (context) => AbonnementPage(title: title, argument: argument),
           );
-        } else {
-          // Vérification live via l'API
-          final username = SharedPreferencesHelper().getString(
-            "phone",
-          ); // ton numéro
-          final url = Uri.parse(
-            "${ApiUrls.getCheckByModuleSubscribeUrl(username!)}/$argument",
+          return;
+        }
+
+        // ✅ Cas 4 : Connecté + abonnement actif → vérification live
+        final username = SharedPreferencesHelper().getString("phone");
+        if (username == null || username.isEmpty) return;
+
+        final url = Uri.parse(
+          "${ApiUrls.getCheckByModuleSubscribeUrl(username)}/$argument",
+        );
+
+        try {
+          final response = await http.get(
+            url,
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer ${TokenManager().getBearerToken()}",
+            },
           );
 
-          try {
-            final response = await http.get(
-              url,
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer ${TokenManager().getBearerToken()}",
-              },
-            );
+          if (response.statusCode == 200) {
+            final isValid = response.body.toLowerCase() == "true";
 
-            if (response.statusCode == 200) {
-              final isValid = response.body.toLowerCase() == "true";
-
-              if (isValid) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => pageToOpen),
-                );
-              } else {
-                showBarModalBottomSheet(
-                  isDismissible: false,
-                  enableDrag: false,
-                  expand: true,
-                  topControl: Align(
-                    alignment: Alignment.centerLeft,
-                    child: FloatingActionButton.small(
-                      backgroundColor: appWhite,
-                      shape: const CircleBorder(),
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Icon(Icons.close, color: appBlack),
-                    ),
-                  ),
-                  context: context,
-                  builder:
-                      (context) =>
-                          AbonnementPage(title: title, argument: argument),
-                );
-              }
+            if (isValid) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => pageToOpen),
+              );
             } else {
-              SnackbarHelper.showError(context, "Erreur serveur");
+              showBarModalBottomSheet(
+                isDismissible: false,
+                enableDrag: false,
+                expand: true,
+                topControl: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FloatingActionButton.small(
+                    backgroundColor: appWhite,
+                    shape: const CircleBorder(),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Icon(Icons.close, color: appBlack),
+                  ),
+                ),
+                context: context,
+                builder:
+                    (context) =>
+                        AbonnementPage(title: title, argument: argument),
+              );
             }
-          } catch (e) {
-            SnackbarHelper.showError(context, "Erreur de connexion");
+          } else {
+            SnackbarHelper.showError(context, "Erreur serveur");
           }
+        } catch (e) {
+          SnackbarHelper.showError(context, "Erreur de connexion");
         }
       },
       child: Column(
@@ -669,8 +701,9 @@ class _HomePageState extends State<HomePage> {
             width: 100,
             padding: EdgeInsets.all(3.w),
             decoration: BoxDecoration(
+              // 🎨 Grisé seulement si connecté + abonnement inactif
               color:
-                  isDisabled
+                  (isDisabled && isLoggedIn)
                       ? Colors.grey.withValues(alpha: 0.4)
                       : appColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.all(Radius.circular(3.w)),
@@ -678,11 +711,8 @@ class _HomePageState extends State<HomePage> {
             child: SvgPicture.asset(
               assetPath,
               colorFilter:
-                  isDisabled
-                      ? const ColorFilter.mode(
-                        Colors.grey,
-                        BlendMode.saturation,
-                      )
+                  (isDisabled && isLoggedIn)
+                      ? ColorFilter.mode(Colors.grey, BlendMode.saturation)
                       : null,
             ),
           ),
@@ -692,7 +722,7 @@ class _HomePageState extends State<HomePage> {
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: isDisabled ? Colors.grey : appBlack,
+              color: (isDisabled && isLoggedIn) ? Colors.grey : appBlack,
               fontSize: 14.5.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -703,15 +733,32 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> sendTokenToBackend(String? token) async {
+    final username = SharedPreferencesHelper().getString("phone");
+    if (username == null || username.isEmpty) return;
+
     final response = await http.post(
       Uri.parse(ApiUrls.postNotificationUrl),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'userName': SharedPreferencesHelper().getString('phone'),
-        'token': token,
-      }),
+      body: jsonEncode({'userName': username, 'token': token}),
     );
 
-    if (response.statusCode == 200 || response.statusCode == 201) {} else {}
+    if (response.statusCode == 200 || response.statusCode == 201) {
+    } else {}
   }
+}
+
+class _ServiceItem {
+  final String title;
+  final String assetPath;
+  final String argument;
+  final Widget page;
+  final bool isDisabled;
+
+  _ServiceItem({
+    required this.title,
+    required this.assetPath,
+    required this.argument,
+    required this.page,
+    required this.isDisabled,
+  });
 }

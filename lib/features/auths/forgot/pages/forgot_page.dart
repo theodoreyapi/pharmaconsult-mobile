@@ -254,17 +254,21 @@ class _ForgotPageState extends State<ForgotPage> {
     );
   }
 
+  bool isEmail(String input) {
+    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(input);
+  }
+
   Future<void> verifCode(BuildContext context) async {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
+        return const AlertDialog(
           content: Row(
             children: [
-              const CircularProgressIndicator(),
-              const SizedBox(width: 20),
-              const Expanded(child: Text('Veuillez patienter...')),
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Expanded(child: Text('Veuillez patienter...')),
             ],
           ),
         );
@@ -272,51 +276,55 @@ class _ForgotPageState extends State<ForgotPage> {
     );
 
     try {
-      // Autoriser les certificats auto-signés (attention en production)
-      HttpClient().badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+      String username =
+      phoneIndicator.isEmpty ? login.text.trim() : phoneIndicator;
 
-      final codeOtp = await http.post(
+      // ✅ Détection dynamique email / phone
+      final String channel = isEmail(username) ? "email" : "whatsapp";
+
+      // ✅ format téléphone uniquement si ce n'est pas email
+      if (!isEmail(username)) {
+        username = username.replaceFirst("+", "00");
+      }
+
+      final response = await http.post(
         Uri.parse(ApiUrls.postGenerateOtpUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'usernameOrEmail': phoneIndicator.isEmpty
-              ? login.text
-              : phoneIndicator.replaceFirst("+", "00"),
-          'otpCode': "",
-          'method': "sms",
+          'username': username,
+          'channel': channel, // ✅ conforme backend
         }),
       );
 
-      if (codeOtp.statusCode == 200) {
-        Navigator.pop(context);
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      if (response.statusCode == 200) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder:
-                (context) => CodeOtpPasswordPage(
-                  phone: phoneIndicator.isEmpty
-                      ? login.text
-                      : phoneIndicator.replaceFirst("+", "00"),
-                ),
+            builder: (context) => CodeOtpPasswordPage(phone: username),
           ),
         );
 
         SnackbarHelper.showSuccess(
           context,
-          "Code OTP envoyé avec succès",
+          "Code OTP envoyé via $channel",
         );
-        return;
       } else {
-        Navigator.pop(context);
         SnackbarHelper.showWarning(
           context,
           "Impossible d'envoyer le code OTP. Veuillez réessayer.",
         );
       }
     } catch (e) {
+      if (!mounted) return;
       Navigator.pop(context);
-      SnackbarHelper.showError(context, "Erreur de connexion");
+
+      SnackbarHelper.showError(
+        context,
+        "Erreur de connexion",
+      );
     }
   }
 }

@@ -70,4 +70,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'pharmaconsults-f209a.firebasestorage.app',
     iosBundleId: 'com.aptiotech.pharmaconsult.yapi.pharmaconsult',
   );
+
 }

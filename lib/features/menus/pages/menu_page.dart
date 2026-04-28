@@ -58,8 +58,27 @@ class _MenuPageState extends State<MenuPage> {
         backgroundColor: appWhite,
         indicatorColor: appColor.withValues(alpha: 0.1),
         selectedIndex: _currentPageIndex,
-        onDestinationSelected:
-            (index) => setState(() => _currentPageIndex = index),
+        onDestinationSelected: (index) {
+          final bool isLoggedIn =
+              (SharedPreferencesHelper().getString("phone") ?? "").isNotEmpty;
+
+          // Index 0 = Accueil → toujours accessible
+          if (index == 0) {
+            setState(() => _currentPageIndex = index);
+            return;
+          }
+
+          // Index 1, 2, 3 → login si non connecté
+          if (!isLoggedIn) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => LoginPage()),
+            );
+            return;
+          }
+
+          setState(() => _currentPageIndex = index);
+        },
         destinations: [
           _navItem(Icons.home_rounded, Icons.home_outlined, "Accueil", 0),
           _navItem(
@@ -99,6 +118,16 @@ class _MenuPageState extends State<MenuPage> {
   }
 
   Widget _buildAppBarLeading(SharedPreferencesHelper helper) {
+    final String nom = helper.getString('nom') ?? "";
+    final String prenom = helper.getString('prenom') ?? "";
+    final String? photo = helper.getString('photo') ?? '';
+
+    // Initiales sécurisées
+    final String initiales =
+        (nom.isNotEmpty && prenom.isNotEmpty)
+            ? "${nom[0]}${prenom[0]}".toUpperCase()
+            : "PC";
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Builder(
@@ -109,15 +138,11 @@ class _MenuPageState extends State<MenuPage> {
                 tag: 'profile_avatar',
                 child: CircleAvatar(
                   backgroundColor: appIndicator,
-                  backgroundImage:
-                      helper.getString('photo') != null
-                          ? NetworkImage(helper.getString('photo')!)
-                          : null,
+                  backgroundImage: photo != '' ? NetworkImage(photo!) : null,
                   child:
-                      helper.getString('photo') == null
+                      photo == ''
                           ? Text(
-                            "${helper.getString('nom')![0]}${helper.getString('prenom')![0]}"
-                                .toUpperCase(),
+                            initiales,
                             style: TextStyle(
                               color: appColor2,
                               fontSize: 15.sp,
@@ -135,7 +160,7 @@ class _MenuPageState extends State<MenuPage> {
   Widget _buildAppDrawer(BuildContext context, SharedPreferencesHelper helper) {
     final String nom = helper.getString('nom') ?? "";
     final String prenom = helper.getString('prenom') ?? "";
-    final String? photo = helper.getString('photo');
+    final String? photo = helper.getString('photo') ?? "";
     final String phone =
         helper.getString('phone')?.replaceFirst("00", "+") ?? "";
 
@@ -155,11 +180,13 @@ class _MenuPageState extends State<MenuPage> {
                   CircleAvatar(
                     radius: 35,
                     backgroundColor: appIndicator,
-                    backgroundImage: photo != null ? NetworkImage(photo) : null,
+                    backgroundImage: photo != '' ? NetworkImage(photo!) : null,
                     child:
-                        photo == null
+                        photo == ''
                             ? Text(
-                              "${nom[0]}${prenom[0]}".toUpperCase(),
+                              (nom.isNotEmpty && prenom.isNotEmpty)
+                                  ? "${nom[0]}${prenom[0]}".toUpperCase()
+                                  : "PC",
                               style: TextStyle(
                                 color: appColor2,
                                 fontSize: 20.sp,
@@ -168,7 +195,7 @@ class _MenuPageState extends State<MenuPage> {
                             )
                             : null,
                   ),
-                  const Spacer(),
+                  Spacer(),
                   Text(
                     "$nom $prenom",
                     style: TextStyle(
@@ -193,24 +220,24 @@ class _MenuPageState extends State<MenuPage> {
                 _drawerTile(
                   "À propos de nous",
                   "about.svg",
-                  () => _go(context, const AboutPage()),
+                  () => _go(context, AboutPage()),
                 ),
                 _drawerTile(
                   "Politique de confidentialité",
                   "politique.svg",
-                  () => _go(context, const PolicyPage()),
+                  () => _go(context, PolicyPage()),
                 ),
                 _drawerTile(
                   "Conditions d'utilisation",
                   "condition.svg",
-                  () => _go(context, const ConditionPage()),
+                  () => _go(context, ConditionPage()),
                 ),
                 _drawerTile(
                   "Mentions légales",
                   "mention.svg",
-                  () => _go(context, const MentionPage()),
+                  () => _go(context, MentionPage()),
                 ),
-                const Divider(indent: 20, endIndent: 20),
+                Divider(indent: 20, endIndent: 20),
                 _drawerSectionTitle("COMMUNAUTÉ"),
                 _drawerTile("Inviter un ami", "invite.svg", _handleShare),
                 _drawerTile(
@@ -319,17 +346,22 @@ class _MenuPageState extends State<MenuPage> {
   }
 
   void _handleShare() {
-    String message = "Salut 👋 télécharge cette application : ";
-    if (Platform.isAndroid) {
-      message +=
-          "https://play.google.com/store/apps/details?id=com.aptiotech.pharmaconsult.yapi.pharmaconsult";
-    } else if (Platform.isIOS) {
-      message += "https://apps.apple.com/app/id123456789";
-    } else {
-      message += "https://www.monsite.com";
-    }
+    String message = """
+Salut 👋
 
-    Share.share(message);
+Télécharge cette application :
+
+📱 Android :
+https://play.google.com/store/apps/details?id=com.aptiotech.pharmaconsult.yapi.pharmaconsult
+
+🍎 iPhone :
+https://apps.apple.com/app/id123456789
+
+🌐 Version web :
+https://www.pharma-consults.com
+""";
+
+    SharePlus.instance.share(ShareParams(text: message));
   }
 
   void _showLogoutDialog(BuildContext context) {

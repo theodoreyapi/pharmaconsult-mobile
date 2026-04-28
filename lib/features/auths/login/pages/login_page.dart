@@ -75,6 +75,20 @@ class _LoginPageState extends State<LoginPage> {
     ]);
   }
 
+  bool isEmail(String input) {
+    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(input);
+  }
+
+  String formatPhone(String phone) {
+    phone = phone.trim();
+
+    if (phone.startsWith('+')) {
+      return phone.replaceFirst('+', '00');
+    }
+
+    return phone;
+  }
+
   // --- CONNEXION ---
   Future<void> handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
@@ -82,52 +96,64 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
-      // Note: Le badCertificateCallback devrait idéalement être géré au niveau global du client HTTP
+      String username =
+      _isEmail ? loginController.text.trim() : phoneIndicator;
+
+      // ✅ normalisation
+      if (!isEmail(username)) {
+        username = formatPhone(username);
+      }
+
       final response = await http.post(
         Uri.parse(ApiUrls.postLoginUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'username':
-              _isEmail
-                  ? loginController.text
-                  : phoneIndicator.replaceFirst("+", "00"),
+          'username': username,
           'password': passwordController.text,
         }),
       );
 
+      if (!mounted) return;
+
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        final user = data['user'];
 
-        if (data['user']['active'] == "ACTIVE" ||
-            data['user']['role'] == "PATIENT") {
+        if (user['active'] == "ACTIVE" && user['role'] == "PATIENT") {
           await _saveUserSession(data);
-          if (!mounted) return;
 
-          SnackbarHelper.showSuccess(context, "Heureux de vous revoir !");
+          SnackbarHelper.showSuccess(context, "Connexion réussie. Heureux de vous revoir !");
+
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => const MenuPage()),
-            (route) => false,
+            MaterialPageRoute(builder: (_) => MenuPage()),
+                (route) => false,
           );
         } else {
           SnackbarHelper.showError(context, "Accès restreint à ce compte.");
         }
-      } else if (response.statusCode == 423) {
-        // Redirection OTP
+      }
+
+      // 🔥 OTP REQUIRED
+      else if (response.statusCode == 423) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder:
-                (_) => CodeOtpPage(
-                  phone:
-                      _isEmail
-                          ? loginController.text
-                          : phoneIndicator.replaceFirst("+", "00"),
-                ),
+            builder: (_) => CodeOtpPage(phone: username),
           ),
         );
-      } else {
-        SnackbarHelper.showError(context, "Identifiants incorrects.");
+
+        SnackbarHelper.showWarning(
+          context,
+          "Validation OTP requise",
+        );
+      }
+
+      // ❌ erreurs backend
+      else {
+        final msg = "Oups ! Vérifiez vos informations de connexion.";
+        SnackbarHelper.showError(context, msg);
       }
     } catch (e) {
       SnackbarHelper.showError(

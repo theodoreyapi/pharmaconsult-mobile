@@ -24,6 +24,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -43,7 +45,7 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = "pharmaconsults"
+            keyAlias = "key"
             keyPassword = "1234567890"
             storeFile = File(rootProject.projectDir, "app/pharmaconsults.jks")
             storePassword = "1234567890"
@@ -61,6 +63,10 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 flutter {

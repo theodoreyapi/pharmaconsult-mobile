@@ -95,45 +95,61 @@ class _CreatePasswordPageState extends State<CreatePasswordPage> {
     }
   }
 
+  bool isEmail(String input) {
+    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(input);
+  }
+
   Future<void> _generateAndRedirectOtp(String phone) async {
     try {
-      final otpResponse = await http.post(
+
+      final String channel = isEmail(phone) ? "email" : "whatsapp";
+
+      final response = await http.post(
         Uri.parse(ApiUrls.postGenerateOtpUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'usernameOrEmail': phone,
-          'otpCode': "",
-          'method': "sms",
+          'username': phone,
+          'channel': channel,
         }),
       );
 
-      if (otpResponse.statusCode == 200) {
-        if (!mounted) return;
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => CodeOtpPage(phone: phone)),
+          MaterialPageRoute(
+            builder: (_) => CodeOtpPage(phone: phone),
+          ),
         );
+
         SnackbarHelper.showSuccess(
           context,
-          "Compte créé ! Veuillez valider le code reçu.",
+          data['message'] ?? "Code envoyé avec succès",
+        );
+      } else if (response.statusCode == 404) {
+        // ❌ utilisateur inexistant
+        final data = jsonDecode(response.body);
+
+        SnackbarHelper.showError(
+          context,
+          data['message'] ?? "Utilisateur introuvable",
         );
       } else {
-        // Compte créé mais OTP échoué -> Login
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-          (route) => false,
-        );
+        // ⚠️ autre erreur serveur
         SnackbarHelper.showWarning(
           context,
-          "Compte créé, connectez-vous pour valider votre accès.",
+          "Erreur lors de l'envoi du code. Réessayez.",
         );
       }
     } catch (e) {
       if (!mounted) return;
-      Navigator.pushReplacement(
+
+      SnackbarHelper.showError(
         context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
+        "Erreur réseau. Vérifiez votre connexion.",
       );
     }
   }

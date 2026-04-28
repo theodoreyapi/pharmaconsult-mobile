@@ -1,57 +1,62 @@
 class TransactionsModel {
   int? id;
-  int? walletId;
-  String? username;
-  double? amount;
+  String? category; // TRANSFERT | RECHARGEMENT | ABONNEMENT
+  String? typeOperation; // DEBIT | CREDIT
+  int? amount;
   String? date;
-  String? libelle;
-  String? designation;
-  String? typeOperation;
+
+  String? label; // ← remplace libelle
+  String? interlocuteurNom;
+  String? type;
+
+  String? senderUsername;
+  String? receiverUsername;
+  String? executeBy;
+
   String? description;
-  String? nameOfSecondParty;
-  String? numberOfSecondParty;
+  int? duree;
+  String? status;
+  String? transactionId;
+  String? paymentMethod;
 
   TransactionsModel({
     this.id,
-    this.walletId,
-    this.username,
+    this.category,
+    this.typeOperation,
     this.amount,
     this.date,
-    this.libelle,
-    this.designation,
-    this.typeOperation,
+    this.label,
+    this.interlocuteurNom,
+    this.type,
+    this.senderUsername,
+    this.receiverUsername,
+    this.executeBy,
     this.description,
-    this.nameOfSecondParty,
-    this.numberOfSecondParty,
+    this.duree,
+    this.status,
+    this.transactionId,
+    this.paymentMethod,
   });
 
   TransactionsModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    walletId = json['walletId'];
-    username = json['username'];
+    category = json['category'];
+    typeOperation = json['typeOperation'];
     amount = json['amount'];
     date = json['date'];
-    libelle = json['libelle'];
-    designation = json['designation'];
-    typeOperation = json['typeOperation'];
-    description = json['description'];
-    nameOfSecondParty = json['nameOfSecondParty'] ?? "";
-    numberOfSecondParty = json['numberOfSecondParty'] ?? "";
-  }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['walletId'] = walletId;
-    data['username'] = username;
-    data['amount'] = amount;
-    data['date'] = date;
-    data['libelle'] = libelle;
-    data['designation'] = designation;
-    data['typeOperation'] = typeOperation;
-    data['description'] = description;
-    data['nameOfSecondParty'] = nameOfSecondParty;
-    data['numberOfSecondParty'] = numberOfSecondParty;
-    return data;
+    label = json['label'];
+    interlocuteurNom = json['interlocuteurNom'];
+    type = json['type'];
+
+    senderUsername = json['senderUsername'];
+    receiverUsername = json['receiverUsername'];
+    executeBy = json['executeBy'];
+
+    description = json['description'];
+    duree = json['duree'];
+    status = json['status'];
+    transactionId = json['transactionId'];
+    paymentMethod = json['paymentMethod'];
   }
 }

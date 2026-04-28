@@ -2,10 +2,10 @@ class ApiUrls {
   ApiUrls._();
 
   // Change base URL
-  static const bool change = false;
+  static const bool change = true;
 
   // Base URL
-  static const baseUrlProd = "http://candidat.aptiotalent.com/api";
+  static const baseUrlProd = "https://admin.pharma-consults.com";
   static const baseUrlTest = "http://new-version.sodalite-consulting.com";
 
   // Pour obtenir la bonne base URL
@@ -68,7 +68,7 @@ class ApiUrls {
   static String getCheckUserUrl(String username) => "$internal/user/getUserByUsername/$username";
 
   // CINETPAY
-  static String get getIntialUrl => "$internalPharma/cinetpay/payment";
+  static String get postIntialUrl => "$internalPharma/cinetpay/payment";
   //static String get getIntialUrl => "$internalPharma/rechargements/initier";
   static String getCheckWalletUrl(String username) => "$internalPharma/wallet/getWalletByUserName/$username";
 

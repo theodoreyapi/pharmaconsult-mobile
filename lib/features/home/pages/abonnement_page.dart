@@ -44,9 +44,6 @@ class _AbonnementPageState extends State<AbonnementPage> {
       },
     );
 
-    print(ApiUrls.getForfaitUrl(widget.argument!.replaceAll(" ", "%20")));
-    debugPrint(response.body);
-
     if (response.statusCode == 200) {
       final List<dynamic> contentList = json.decode(
         utf8.decode(response.bodyBytes),

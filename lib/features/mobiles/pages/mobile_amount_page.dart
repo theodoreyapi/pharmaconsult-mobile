@@ -86,50 +86,58 @@ class _MobileAmountPageState extends State<MobileAmountPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          content: Row(
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(width: 20),
-              const Expanded(child: Text('Patientez...')),
-            ],
-          ),
-        );
-      },
+      builder: (_) => AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 20),
+            Expanded(child: Text('Patientez...')),
+          ],
+        ),
+      ),
     );
 
     try {
-      final url = Uri.parse(
-        ApiUrls.getCheckUserUrl(
-          widget.phoneNumber!.contains('@')
-              ? widget.phoneNumber!
-              : formatPhoneNumber(widget.phoneNumber!),
-        ),
-      );
+      final input = widget.phoneNumber ?? '';
+      final username = input.contains('@')
+          ? input
+          : formatPhoneNumber(input);
+
+      final url = Uri.parse(ApiUrls.getCheckUserUrl(username));
 
       final res = await http.get(
         url,
         headers: {"Content-Type": "application/json"},
       );
 
-      if (res.statusCode == 200 || res.statusCode == 201) {
-        Navigator.pop(context);
+      if (mounted) Navigator.pop(context); // fermer le loader
 
+      if (res.statusCode == 200) {
         final data = jsonDecode(utf8.decode(res.bodyBytes));
 
         setState(() {
-          firstName = data["firstName"];
-          lastName = data["lastName"];
-          role = data["role"];
+          firstName   = data["firstName"];
+          lastName    = data["lastName"];
+          role        = data["role"];
           phoneNumbers = data["phoneNumber"];
         });
+
+      } else if (res.statusCode == 404) {
+        // Utilisateur non trouvé
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Aucun compte trouvé pour cet identifiant")),
+        );
       } else {
-        Navigator.pop(context);
-        throw Exception("Erreur API (${res.statusCode}): ${res.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erreur serveur (${res.statusCode})")),
+        );
       }
+
     } catch (e) {
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Erreur de connexion")),
+      );
     }
   }
 
@@ -326,11 +334,7 @@ class _MobileAmountPageState extends State<MobileAmountPage> {
             "Votre nouveau solde : $newAmount",
           );
 
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const MenuPage()),
-            (route) => false,
-          );
+          Navigator.of(context).popUntil((route) => route.isFirst);
         } else {
           Navigator.pop(context);
           SnackbarHelper.showWarning(
@@ -339,11 +343,7 @@ class _MobileAmountPageState extends State<MobileAmountPage> {
             "l'actualisation de votre compte",
           );
 
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const MenuPage()),
-            (route) => false,
-          );
+          Navigator.of(context).popUntil((route) => route.isFirst);
         }
       } else if (response.statusCode == 400) {
         Navigator.pop(context);

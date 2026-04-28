@@ -41,10 +41,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
           SharedPreferencesHelper().getString('phone')!,
         ),
       ),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': "Bearer ${TokenManager().getBearerToken()}",
-      },
+      headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
@@ -108,7 +105,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                     ),
-                    tabs: const <Widget>[
+                    tabs: <Widget>[
                       Tab(text: "Tout"),
                       Tab(text: "Rechargements"),
                       Tab(text: "Transactions"),
@@ -140,17 +137,17 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                           buildTransactionsList(allTransactions),
                           buildTransactionsList(
                             allTransactions
-                                .where((t) => t.designation == "RECHARGEMENT")
+                                .where((t) => t.category == "RECHARGEMENT")
                                 .toList(),
                           ),
                           buildTransactionsList(
                             allTransactions
-                                .where((t) => t.designation == "TRANSFERT")
+                                .where((t) => t.category == "TRANSFERT")
                                 .toList(),
                           ),
                           buildTransactionsList(
                             allTransactions
-                                .where((t) => t.designation == "ABONNEMENT")
+                                .where((t) => t.category == "ABONNEMENT")
                                 .toList(),
                           ),
                         ],
@@ -198,7 +195,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
         // Choix de l'icône selon le type de transaction
         IconData iconData;
         Color iconColor;
-        switch (tx.designation) {
+        switch (tx.category) {
           case "TRANSFERT":
             iconData = Icons.swap_horiz;
             iconColor = Colors.orange;
@@ -246,16 +243,16 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      tx.libelle ?? "",
+                      tx.label ?? "",
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                         color: appBlack,
                       ),
                     ),
-                    if (tx.designation == "TRANSFERT") ...[
+                    if (tx.category == "TRANSFERT") ...[
                       Text(
-                        tx.nameOfSecondParty ?? "",
+                        tx.interlocuteurNom ?? "",
                         style: TextStyle(fontSize: 14.sp, color: appColorBlue),
                       ),
                       Text(
@@ -266,7 +263,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                         ),
                       ),
                     ],
-                    if (tx.designation == "ABONNEMENT") ...[
+                    if (tx.category == "ABONNEMENT") ...[
                       Text(
                         tx.description ?? "",
                         style: TextStyle(fontSize: 13.sp, color: appColorHtml),

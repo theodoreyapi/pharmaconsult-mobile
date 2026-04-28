@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
 import 'package:sizer/sizer.dart';
@@ -18,6 +19,22 @@ Future<void> main() async {
 
   await SharedPreferencesHelper().init();
 
+  AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'high_importance_channel',
+    'Notifications importantes',
+    importance: Importance.high,
+    playSound: true,
+  );
+
+  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.createNotificationChannel(channel);
+
+  // Vérification connexion
   var connectivityResult = await Connectivity().checkConnectivity();
 
   if (connectivityResult == ConnectivityResult.mobile ||
@@ -25,7 +42,6 @@ Future<void> main() async {
     runApp(const MyApp());
   } else {
     runApp(const MyApp());
-    // runApp(const MyAppNoConnection());
   }
 }
 

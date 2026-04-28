@@ -49,6 +49,10 @@ class _CodeOtpPasswordPageState extends State<CodeOtpPasswordPage> {
     super.dispose();
   }
 
+  bool isEmail(String input) {
+    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(input);
+  }
+
   Future<void> verifyUser(BuildContext context) async {
     // Afficher une boîte de dialogue de chargement
     showDialog(
@@ -68,6 +72,14 @@ class _CodeOtpPasswordPageState extends State<CodeOtpPasswordPage> {
     );
 
     try {
+
+      String username = widget.phone ?? "";
+
+      // ✅ Si ce n’est PAS un email → format téléphone
+      if (!isEmail(username)) {
+        username = username.replaceFirst("+", "00");
+      }
+
       // Autoriser les certificats auto-signés (attention en production)
       HttpClient().badCertificateCallback =
           (X509Certificate cert, String host, int port) => true;
@@ -76,9 +88,8 @@ class _CodeOtpPasswordPageState extends State<CodeOtpPasswordPage> {
         Uri.parse(ApiUrls.postValidateOtpUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'usernameOrEmail': widget.phone,
+          'username': username,
           'otpCode': otp,
-          'method': "sms",
         }),
       );
 

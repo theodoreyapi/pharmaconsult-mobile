@@ -83,5 +83,15 @@
     <key>NSFaceIDUsageDescription</key>
     <string>Nous utilisons Face ID pour sécuriser l'application.</string>
 
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>pharmaconsults</string>
+            </array>
+        </dict>
+    </array>
+
 </dict>
 </plist>

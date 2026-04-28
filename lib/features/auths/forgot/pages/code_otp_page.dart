@@ -63,30 +63,46 @@ class _CodeOtpPageState extends State<CodeOtpPage> {
     });
   }
 
+  bool isEmail(String input) {
+    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(input);
+  }
+
   // --- VERIFICATION ---
   Future<void> _verifyOtp() async {
-    if (_pinController.text.length < 4)
+    if (_pinController.text.length < 4) {
       return; // Adapter selon la longueur de votre OTP
+    }
 
     setState(() => _isLoading = true);
 
     try {
+      String username = widget.phone ?? "";
+
+      // ✅ Si ce n’est PAS un email → format téléphone
+      if (!isEmail(username)) {
+        username = username.replaceFirst("+", "00");
+      }
+
       final response = await http.post(
         Uri.parse(ApiUrls.postValidateOtpUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'usernameOrEmail': widget.phone!.replaceFirst("+", "00"),
+          'username': username,
           'otpCode': _pinController.text,
-          'method': "sms",
         }),
       );
 
       if (response.statusCode == 200) {
         if (!mounted) return;
-        SnackbarHelper.showSuccess(context, "Compte vérifié avec succès !");
+        SnackbarHelper.showSuccess(
+          context,
+          "Bienvenue sur Pharmaconsults ! "
+          "Votre compte est activé. Explorez les pharmacies de garde, "
+          "les prix des médicaments et bien plus encore.",
+        );
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const LoginPage()),
+          MaterialPageRoute(builder: (_) => LoginPage()),
           (route) => false,
         );
       } else {

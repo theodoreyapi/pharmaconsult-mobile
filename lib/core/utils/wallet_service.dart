@@ -9,10 +9,14 @@ class WalletService {
   Timer? _timer;
 
   void startListening(Function(double) onUpdate) {
+    final phone = SharedPreferencesHelper().getString("phone");
+
+    if (phone == null || phone.isEmpty) return;
+
     // Appel toutes les 5 secondes
     _timer = Timer.periodic(Duration(seconds: 10), (_) async {
       final url = Uri.parse(
-        ApiUrls.getCheckWalletUrl(SharedPreferencesHelper().getString('phone')!),
+        ApiUrls.getCheckWalletUrl(phone),
       );
 
       final response = await http.get(url);
