@@ -115,6 +115,8 @@ class _PrixPageState extends State<PrixPage> {
       },
     );
 
+    print(response.statusCode);
+
     if (response.statusCode == 200) {
       final data = json.decode(utf8.decode(response.bodyBytes));
       final List content = data['content'];
@@ -214,15 +216,16 @@ class _PrixPageState extends State<PrixPage> {
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
         child: TextField(
           controller: _searchController,
+          onChanged: _onSearchChanged,
           decoration: InputDecoration(
             hintText: "Rechercher un médicament...",
-            prefixIcon: const Icon(Icons.search),
+            prefixIcon: Icon(Icons.search),
             filled: true,
             fillColor: appWhite,
             border: OutlineInputBorder(
