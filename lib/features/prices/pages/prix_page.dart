@@ -7,13 +7,11 @@ import 'package:sizer/sizer.dart';
 
 import '../../../core/constants/constants.dart';
 import '../../../core/themes/themes.dart';
-import '../../../core/utils/utils.dart';
-import '../../../core/widgets/widgets.dart';
 import '../../../models/medicaments/medicament_model.dart';
 import '../prices.dart';
 
 class PrixPage extends StatefulWidget {
-  const PrixPage({super.key});
+  PrixPage({super.key});
 
   @override
   State<PrixPage> createState() => _PrixPageState();
@@ -47,7 +45,7 @@ class _PrixPageState extends State<PrixPage> {
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
 
-    _debounce = Timer(const Duration(milliseconds: 600), () async {
+    _debounce = Timer(Duration(milliseconds: 600), () async {
       final text = query.trim().toLowerCase();
 
       if (text.isEmpty) {
@@ -94,8 +92,6 @@ class _PrixPageState extends State<PrixPage> {
       },
     );
 
-    print(ApiUrls.getMedicamentUrl);
-
     if (response.statusCode == 200) {
       final data = json.decode(utf8.decode(response.bodyBytes));
       final List content = data['content'];
@@ -114,8 +110,6 @@ class _PrixPageState extends State<PrixPage> {
         'Content-Type': 'application/json',
       },
     );
-
-    print(response.statusCode);
 
     if (response.statusCode == 200) {
       final data = json.decode(utf8.decode(response.bodyBytes));
@@ -148,14 +142,14 @@ class _PrixPageState extends State<PrixPage> {
                 future: _futureMedicaments,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
+                    return Center(
                       child: CircularProgressIndicator.adaptive(),
                     );
                   }
                   if (snapshot.hasError) return _buildErrorState();
 
                   return _isSearching
-                      ? const Center(
+                      ? Center(
                         child: CircularProgressIndicator.adaptive(),
                       )
                       : _buildListView();
@@ -170,7 +164,7 @@ class _PrixPageState extends State<PrixPage> {
         backgroundColor: appColor,
         onPressed:
             () => setState(() => _futureMedicaments = _fetchInitialData()),
-        child: const Icon(Icons.refresh, color: Colors.white),
+        child: Icon(Icons.refresh, color: Colors.white),
       ),
     );
   }
@@ -251,7 +245,7 @@ class _PrixPageState extends State<PrixPage> {
     return ListView.separated(
       padding: EdgeInsets.all(4.w),
       itemCount: _filteredMedicaments.length,
-      separatorBuilder: (_, __) => const Divider(height: 25),
+      separatorBuilder: (_, __) => Divider(height: 25),
       itemBuilder: (context, index) {
         final med = _filteredMedicaments[index];
         return _buildMedCard(med);
@@ -318,7 +312,7 @@ class _PrixPageState extends State<PrixPage> {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: Colors.grey),
+          Icon(Icons.chevron_right, color: Colors.grey),
         ],
       ),
     );
@@ -327,7 +321,7 @@ class _PrixPageState extends State<PrixPage> {
   Widget _buildErrorState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20),
         child: Text(
           "Une erreur est survenue lors de la récupération des prix."
           "\n\nContactez le support si cela persiste.",

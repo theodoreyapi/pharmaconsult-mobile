@@ -96,7 +96,6 @@ class _PharmacyPageState extends State<PharmacyPage> {
       Uri.parse(ApiUrls.getListCity),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': "Bearer ${TokenManager().getBearerToken()}",
       },
     );
 

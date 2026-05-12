@@ -83,7 +83,7 @@ class _DetailPharmacysPageState extends State<DetailPharmacysPage> {
                 if (widget.pharmacy!.notices != null) ...[
                   StarRating(
                     rating:
-                        (widget.pharmacy!.notices!.ratingSummary!.average!).toDouble() ?? 0,
+                        (widget.pharmacy!.notices!.ratingSummary!.average!).toDouble(),
                     color: Colors.orange,
                     size: 13,
                   ),

@@ -444,6 +444,13 @@ class _HomePageState extends State<HomePage> {
                               page: AssurancePage(),
                               isDisabled: !isModuleActive(subs, "Assurances"),
                             ),
+                            _ServiceItem(
+                              title: "Vaccination",
+                              assetPath: "assets/svg/vaccin.svg",
+                              argument: "Vaccination",
+                              page: MenuVacciPage(),
+                              isDisabled: !isModuleActive(subs, "Vaccination"),
+                            ),
                           ];
 
                           // 📌 GRIDVIEW si pas de publicités

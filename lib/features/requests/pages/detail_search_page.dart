@@ -67,7 +67,6 @@ class _DetailSearchPageState extends State<DetailSearchPage> {
       Uri.parse(ApiUrls.getListCity),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': "Bearer ${TokenManager().getBearerToken()}",
       },
     );
 

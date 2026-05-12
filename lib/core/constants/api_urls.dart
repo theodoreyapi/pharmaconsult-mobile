@@ -29,6 +29,7 @@ class ApiUrls {
 
   // Communes
   static String get getListCity => "$internalPharma/communes/search";
+  static String get getListCommune => "$internalPharma/communes";
   static String get postAddNotice => "$internalPharma/notices/add";
   static String getListNotice(int id) => "$internalPharma/notices/get/$id";
 
@@ -83,4 +84,21 @@ class ApiUrls {
   static String get getConditionUrl => "$internalPharma/parametres-generaux/getbyType/CONDITIONS GENERALES";
   static String get getHelpUrl => "$internalPharma/parametres-generaux/getbyType/AIDE";
   static String get getMentionUrl => "$internalPharma/parametres-generaux/getbyType/MENTIONS LEGALES";
+
+  // VACCINS
+  static String get getVaccine => "$internal/vaccins";
+  static String get getCategories => "$internal/vaccins/categories";
+  static String get postAppointments => "$internal/vaccins/appointments";
+  static String getCheckByAppointmentsUrl(String identifiant) => "$internal/vaccins/appointments/$identifiant";
+  static String getListVaccinByTypesUrl(String type) => "$internal/vaccins/type/$type";
+
+  // PROFIL VACCINS
+  static String getListProfile(String identifiant) => "$internal/health-profiles/$identifiant";
+  static String get postCreateProfile => "$internal/health-profiles";
+  static String putUpdateProfile(int profileId) => "$internal/health-profiles/$profileId";
+  static String deleteProfile(int profileId) => "$internal/health-profiles/$profileId";
+  static String getListVaccinationByProfile(int profileId, String userId) => "$internal/health-profiles/$profileId/vaccinations?id_user=$userId";
+  static String postUpdateVaccinationByProfile(int profileId, String userId, int vaccinationId) => "$internal/health-profiles/$profileId/vaccinations/$vaccinationId?id_user=$userId";
+  static String postCreateVaccinationByProfile(int profileId) => "$internal/health-profiles/$profileId/vaccinations";
+  static String deleteVaccinationByProfile(int profileId, String userId, int vaccinationId) => "$internal/health-profiles/$profileId/vaccinations/$vaccinationId?id_user=$userId";
 }

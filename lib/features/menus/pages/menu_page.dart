@@ -27,10 +27,10 @@ class _MenuPageState extends State<MenuPage> {
   int _currentPageIndex = 0;
 
   final List<Widget> _pages = [
-    const HomePage(),
-    const QrPage(),
-    const MoneyPage(),
-    const ProfilePage(),
+    HomePage(),
+    QrPage(),
+    MoneyPage(),
+    ProfilePage(),
   ];
 
   @override

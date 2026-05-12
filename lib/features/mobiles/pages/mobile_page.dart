@@ -21,7 +21,6 @@ class MobilePage extends StatefulWidget {
   State<MobilePage> createState() => _MobilePageState();
 }
 
-// ✅ with WidgetsBindingObserver obligatoire
 class _MobilePageState extends State<MobilePage> with WidgetsBindingObserver {
   bool _waitingForReturn = false;
   StreamSubscription<Uri>? _linkSubscription; // 👈
@@ -157,13 +156,12 @@ class _MobilePageState extends State<MobilePage> with WidgetsBindingObserver {
       if (response.statusCode == 200 && data['success'] == true) {
         final url = data['rechargement_url'];
 
-        // ✅ Flag activé AVANT launchUrl
         setState(() => _waitingForReturn = true);
 
         await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Paiement échoué')),
+          SnackBar(content: Text(data['message'] ?? 'Rechargement échoué')),
         );
       }
     } catch (e) {
