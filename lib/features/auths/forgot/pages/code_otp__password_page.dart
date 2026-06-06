@@ -72,7 +72,6 @@ class _CodeOtpPasswordPageState extends State<CodeOtpPasswordPage> {
     );
 
     try {
-
       String username = widget.phone ?? "";
 
       // ✅ Si ce n’est PAS un email → format téléphone
@@ -87,10 +86,7 @@ class _CodeOtpPasswordPageState extends State<CodeOtpPasswordPage> {
       final response = await http.post(
         Uri.parse(ApiUrls.postValidateOtpUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': username,
-          'otpCode': otp,
-        }),
+        body: jsonEncode({'username': username, 'otpCode': otp}),
       );
 
       Navigator.pop(context);
@@ -154,7 +150,6 @@ class _CodeOtpPasswordPageState extends State<CodeOtpPasswordPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Gap(3.h),
 
                   /// Logo
@@ -239,7 +234,8 @@ class _CodeOtpPasswordPageState extends State<CodeOtpPasswordPage> {
                               controller: pinController,
                               pinputAutovalidateMode:
                                   PinputAutovalidateMode.disabled,
-                              hapticFeedbackType: HapticFeedbackType.lightImpact,
+                              hapticFeedbackType:
+                                  HapticFeedbackType.lightImpact,
                               showCursor: true,
                               onCompleted: (pin) {
                                 otp = pin;
@@ -284,14 +280,7 @@ class _CodeOtpPasswordPageState extends State<CodeOtpPasswordPage> {
           AppConstants.btnProceed,
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) =>
-                          NewPasswordPage(code: otp, phone: widget.phone),
-                ),
-              );
+              verifyUser(context);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(_snackBar);
             }
