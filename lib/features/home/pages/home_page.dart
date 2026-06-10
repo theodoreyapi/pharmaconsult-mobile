@@ -9,6 +9,7 @@ import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:pharmaconsult/features/auths/login/login.dart';
+import 'package:pharmaconsult/features/health/menusante/menusante.dart';
 import 'package:pharmaconsult/features/notification_overlay.dart';
 import 'package:pharmaconsult/models/publicities/publicities_model.dart';
 import 'package:sizer/sizer.dart';
@@ -451,6 +452,13 @@ class _HomePageState extends State<HomePage> {
                               page: MenuVacciPage(),
                               isDisabled: !isModuleActive(subs, "Vaccination"),
                             ),
+                            _ServiceItem(
+                              title: "Suivi santé",
+                              assetPath: "assets/svg/suivi.svg",
+                              argument: "Suivi sante",
+                              page: MenusantePage(),
+                              isDisabled: false,
+                            ),
                           ];
 
                           // 📌 GRIDVIEW si pas de publicités
@@ -610,6 +618,13 @@ class _HomePageState extends State<HomePage> {
       onTap: () async {
         // ✅ Cas 1 : Pharmacie de garde — toujours accessible
         if (argument == "Pharmacie de garde") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => pageToOpen),
+          );
+          return;
+        }
+        if (argument == "Suivi sante") {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => pageToOpen),

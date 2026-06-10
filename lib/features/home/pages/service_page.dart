@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:pharmaconsult/features/health/health.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/themes/themes.dart';
@@ -53,6 +54,12 @@ class _ServicePageState extends State<ServicePage> {
       'argument': "Vaccination",
       'page': VaccinPage(),
       'isDisabled': true,
+    },
+    {
+      'title': "Suivi santé",
+      'assetPath': "assets/svg/vaccin.svg",
+      'argument': "Suivi sante",
+      'page': SantePage(),
     },
   ];
 

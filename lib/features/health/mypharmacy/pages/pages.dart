@@ -1,0 +1,1 @@
+export 'my_pharmacy_page.dart';
