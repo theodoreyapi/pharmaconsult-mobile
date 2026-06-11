@@ -1,6 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:pharmaconsult/core/constants/api_urls.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
+import 'package:pharmaconsult/core/utils/utils.dart';
+import 'package:pharmaconsult/models/suivisante/traitement_model.dart';
 import 'package:sizer/sizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TraitementPage extends StatefulWidget {
   const TraitementPage({super.key});
@@ -10,6 +16,53 @@ class TraitementPage extends StatefulWidget {
 }
 
 class _TraitementPageState extends State<TraitementPage> {
+  late Future<TraitementModel> _futureTraitements;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureTraitements = fetchTraitements();
+  }
+
+  Future<TraitementModel> fetchTraitements() async {
+    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "1";
+
+    final response = await http.get(
+      Uri.parse(ApiUrls.getListTraitement(patientId)),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      return TraitementModel.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+    } else {
+      throw Exception('Erreur lors de la récupération des traitements');
+    }
+  }
+
+  Color _parseColor(String? colorHex) {
+    if (colorHex == null || colorHex.isEmpty) return const Color(0xFF27AE60);
+    try {
+      return Color(int.parse(colorHex.replaceAll('#', '0xFF')));
+    } catch (e) {
+      return const Color(0xFF27AE60);
+    }
+  }
+
+  IconData _getStatusIcon(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'à jour':
+      case 'a jour':
+        return Icons.check_circle_outline;
+      case 'bientôt fini':
+      case 'bientot fini':
+        return Icons.access_time;
+      case 'en retard':
+        return Icons.error_outline;
+      default:
+        return Icons.medication_outlined;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,7 +74,7 @@ class _TraitementPageState extends State<TraitementPage> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Mes traitements',
               style: TextStyle(
                 color: Color(0xFF0F3E32),
@@ -40,97 +93,94 @@ class _TraitementPageState extends State<TraitementPage> {
           ],
         ),
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: EdgeInsets.only(left: 10, right: 10, bottom: 100, top: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionTitle('Hypertension artérielle'),
-                MedicationCard(
-                  name: 'Amlodipine 5mg',
-                  dosage: '1 comprimé le matin',
-                  deliveryDate: '15 févr.',
-                  delayDays: 84,
-                  status: 'À jour',
-                  statusColor: Color(0xFF27AE60),
-                  progress: 0.8,
-                  icon: Icons.check_circle_outline,
-                ),
-                MedicationCard(
-                  name: 'Hydrochlorothiazide 25mg',
-                  dosage: '1 comprimé le matin',
-                  deliveryDate: '15 févr.',
-                  delayDays: 84,
-                  status: 'À jour',
-                  statusColor: Color(0xFF27AE60),
-                  progress: 0.8,
-                  icon: Icons.check_circle_outline,
-                ),
-                SizedBox(height: 20),
-                _buildSectionTitle('Diabète type 2'),
-                MedicationCard(
-                  name: 'Metformine 850mg',
-                  dosage: '1 comprimé matin et soir',
-                  deliveryDate: '20 févr.',
-                  delayDays: 79,
-                  status: 'Bientôt fini',
-                  statusColor: Color(0xFFF39C12),
-                  progress: 0.95,
-                  icon: Icons.access_time,
-                ),
-                MedicationCard(
-                  name: 'Glibenclamide 5mg',
-                  dosage: '1 comprimé le matin',
-                  deliveryDate: '10 janv.',
-                  delayDays: 120,
-                  status: 'En retard',
-                  statusColor: Color(0xFFE74C3C),
-                  progress: 1.0,
-                  icon: Icons.error_outline,
-                ),
-              ],
-            ),
-          ),
+      body: FutureBuilder<TraitementModel>(
+        future: _futureTraitements,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Erreur: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data?.traitements == null) {
+            return const Center(child: Text('Aucun traitement trouvé'));
+          }
 
-          // Bouton fixe en bas
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              icon: Icon(Icons.phone_outlined, color: Colors.white),
-              label: Text(
-                'Contacter ma pharmacie',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+          final data = snapshot.data!;
+          final traitements = data.traitements!;
+
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.only(left: 10, right: 10, bottom: 100, top: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: traitements.map((section) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle(section.pathologie ?? 'Général'),
+                        ... (section.medicaments ?? []).map((med) {
+                          return MedicationCard(
+                            name: med.name ?? 'Médicament',
+                            dosage: med.dosage ?? '—',
+                            deliveryDate: med.dispensedAt ?? '—',
+                            delayDays: med.delayDays ?? 0,
+                            status: med.status ?? '—',
+                            statusColor: _parseColor(med.statusColor),
+                            progress: med.progress ?? 0.0,
+                            icon: _getStatusIcon(med.status),
+                          );
+                        }),
+                      ],
+                    );
+                  }).toList(),
                 ),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF27AE60),
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3.w),
+
+              // Bouton fixe en bas
+              if (data.pharmacyPhone != null)
+                Positioned(
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final url = Uri.parse('tel:${data.pharmacyPhone}');
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url);
+                      }
+                    },
+                    icon: const Icon(Icons.phone_outlined, color: Colors.white),
+                    label: const Text(
+                      'Contacter ma pharmacie',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF27AE60),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3.w),
+                      ),
+                      elevation: 4,
+                    ),
+                  ),
                 ),
-                elevation: 4,
-              ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: Color(0xFF7F8C8D),
@@ -165,7 +215,7 @@ class MedicationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -173,14 +223,14 @@ class MedicationCard extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -191,11 +241,11 @@ class MedicationCard extends StatelessWidget {
                       child: Row(
                         children: [
                           Icon(icon, color: statusColor, size: 22),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               name,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF2C3E50),
@@ -206,7 +256,7 @@ class MedicationCard extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 6,
                       ),
@@ -225,32 +275,32 @@ class MedicationCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Padding(
-                  padding: EdgeInsets.only(left: 32),
+                  padding: const EdgeInsets.only(left: 32),
                   child: Text(
                     dosage,
                     style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Padding(
-                  padding: EdgeInsets.only(left: 32),
+                  padding: const EdgeInsets.only(left: 32),
                   child: Row(
                     children: [
                       Text(
                         'Délivré le $deliveryDate',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Color(0xFFBDC3C7),
                           fontSize: 12,
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Text('|', style: TextStyle(color: Color(0xFFBDC3C7))),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
+                      const Text('|', style: TextStyle(color: Color(0xFFBDC3C7))),
+                      const SizedBox(width: 8),
                       Text(
                         'En retard de $delayDays jours',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Color(0xFFBDC3C7),
                           fontSize: 12,
                         ),
@@ -264,14 +314,14 @@ class MedicationCard extends StatelessWidget {
 
           // Barre de progression en bas de la carte
           ClipRRect(
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),
             ),
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: Color(0xFFF2F2F2),
+              backgroundColor: const Color(0xFFF2F2F2),
               valueColor: AlwaysStoppedAnimation<Color>(statusColor),
             ),
           ),

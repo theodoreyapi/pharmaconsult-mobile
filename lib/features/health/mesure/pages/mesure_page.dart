@@ -1,7 +1,13 @@
+import 'dart:convert';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:pharmaconsult/core/constants/constants.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
+import 'package:pharmaconsult/core/utils/utils.dart';
 import 'package:pharmaconsult/features/health/mesure/mesure.dart';
+import 'package:pharmaconsult/models/suivisante/mesure_model.dart';
 
 // ─── Modèle de données ───────────────────────────────────────────────────────
 
@@ -28,290 +34,93 @@ class MesureEntry {
 // ─── Page principale ─────────────────────────────────────────────────────────
 
 class MesurePage extends StatefulWidget {
-  MesurePage({super.key});
+  const MesurePage({super.key});
 
   @override
   State<MesurePage> createState() => _MesurePageState();
 }
 
-class _MesurePageState extends State<MesurePage> {
+class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
+  late final TabController _tabController;
+  late Future<List<MesureModel>> _futureRequest;
+
   int _selectedTab = 0;
 
-  // ── Données mockées par onglet ──────────────────────────────────────────
+  @override
+  void initState() {
+    super.initState();
+    _futureRequest = fetchRequest();
+    _tabController = TabController(length: 5, vsync: this);
+  }
 
-  // PA : [systolique, diastolique]
-  final List<Map<String, dynamic>> _paHistory = [
-    {
-      'sys': 135,
-      'dia': 85,
-      'date': '11 mars 2026',
-      'label': 'Attention',
-      'color': Color(0xFFF39C12),
-      'bg': Color(0xFFFFF2CC),
-    },
-    {
-      'sys': 128,
-      'dia': 82,
-      'date': '4 mars 2026',
-      'label': 'Normal',
-      'color': Color(0xFF27AE60),
-      'bg': Color(0xFFE8F5E9),
-    },
-    {
-      'sys': 142,
-      'dia': 92,
-      'date': '25 févr. 2026',
-      'label': 'Élevé',
-      'color': Color(0xFFE74C3C),
-      'bg': Color(0xFFFFEAEA),
-    },
-    {
-      'sys': 130,
-      'dia': 84,
-      'date': '18 févr. 2026',
-      'label': 'Attention',
-      'color': Color(0xFFF39C12),
-      'bg': Color(0xFFFFF2CC),
-    },
-    {
-      'sys': 126,
-      'dia': 80,
-      'date': '11 févr. 2026',
-      'label': 'Normal',
-      'color': Color(0xFF27AE60),
-      'bg': Color(0xFFE8F5E9),
-    },
-    {
-      'sys': 138,
-      'dia': 88,
-      'date': '4 févr. 2026',
-      'label': 'Attention',
-      'color': Color(0xFFF39C12),
-      'bg': Color(0xFFFFF2CC),
-    },
-  ];
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
-  // Pouls bpm
-  final List<MesureEntry> _poulsHistory = [
-    MesureEntry(
-      value: '78',
-      unit: 'bpm',
-      date: '11 mars 2026',
-      statusLabel: 'Normal',
-      statusColor: Color(0xFF27AE60),
-      statusBg: Color(0xFFE8F5E9),
-    ),
-    MesureEntry(
-      value: '82',
-      unit: 'bpm',
-      date: '4 mars 2026',
-      statusLabel: 'Normal',
-      statusColor: Color(0xFF27AE60),
-      statusBg: Color(0xFFE8F5E9),
-    ),
-    MesureEntry(
-      value: '95',
-      unit: 'bpm',
-      date: '25 févr. 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-    ),
-    MesureEntry(
-      value: '72',
-      unit: 'bpm',
-      date: '18 févr. 2026',
-      statusLabel: 'Normal',
-      statusColor: Color(0xFF27AE60),
-      statusBg: Color(0xFFE8F5E9),
-    ),
-    MesureEntry(
-      value: '105',
-      unit: 'bpm',
-      date: '11 févr. 2026',
-      statusLabel: 'Élevé',
-      statusColor: Color(0xFFE74C3C),
-      statusBg: Color(0xFFFFEAEA),
-    ),
-    MesureEntry(
-      value: '80',
-      unit: 'bpm',
-      date: '4 févr. 2026',
-      statusLabel: 'Normal',
-      statusColor: Color(0xFF27AE60),
-      statusBg: Color(0xFFE8F5E9),
-    ),
-  ];
+  Future<List<MesureModel>> fetchRequest() async {
+    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "1";
 
-  // Glycémie g/L
-  final List<MesureEntry> _glycHistory = [
-    MesureEntry(
-      value: '1.15',
-      unit: 'g/L',
-      date: '10 mars 2026',
-      statusLabel: 'Normal',
-      statusColor: Color(0xFF27AE60),
-      statusBg: Color(0xFFE8F5E9),
-      subtitle: 'À jeun — 10 mars 2026',
-    ),
-    MesureEntry(
-      value: '1.42',
-      unit: 'g/L',
-      date: '3 mars 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-      subtitle: 'À jeun — 3 mars 2026',
-    ),
-    MesureEntry(
-      value: '1.85',
-      unit: 'g/L',
-      date: '24 févr. 2026',
-      statusLabel: 'Élevé',
-      statusColor: Color(0xFFE74C3C),
-      statusBg: Color(0xFFFFEAEA),
-      subtitle: 'À jeun — 24 févr. 2026',
-    ),
-    MesureEntry(
-      value: '1.08',
-      unit: 'g/L',
-      date: '17 févr. 2026',
-      statusLabel: 'Normal',
-      statusColor: Color(0xFF27AE60),
-      statusBg: Color(0xFFE8F5E9),
-      subtitle: 'À jeun — 17 févr. 2026',
-    ),
-    MesureEntry(
-      value: '1.52',
-      unit: 'g/L',
-      date: '10 févr. 2026',
-      statusLabel: 'Élevé',
-      statusColor: Color(0xFFE74C3C),
-      statusBg: Color(0xFFFFEAEA),
-      subtitle: 'À jeun — 10 févr. 2026',
-    ),
-    MesureEntry(
-      value: '1.20',
-      unit: 'g/L',
-      date: '3 févr. 2026',
-      statusLabel: 'Normal',
-      statusColor: Color(0xFF27AE60),
-      statusBg: Color(0xFFE8F5E9),
-      subtitle: 'À jeun — 3 févr. 2026',
-    ),
-  ];
+    final http.Response response = await http.get(
+      Uri.parse(
+        ApiUrls.getListMesure(patientId),
+      ),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
 
-  // Poids kg
-  final List<MesureEntry> _poidsHistory = [
-    MesureEntry(
-      value: '82.5',
-      unit: 'kg',
-      date: '10 mars 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-    ),
-    MesureEntry(
-      value: '83.0',
-      unit: 'kg',
-      date: '3 mars 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-    ),
-    MesureEntry(
-      value: '84.2',
-      unit: 'kg',
-      date: '24 févr. 2026',
-      statusLabel: 'Élevé',
-      statusColor: Color(0xFFE74C3C),
-      statusBg: Color(0xFFFFEAEA),
-    ),
-    MesureEntry(
-      value: '83.8',
-      unit: 'kg',
-      date: '17 févr. 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-    ),
-    MesureEntry(
-      value: '83.5',
-      unit: 'kg',
-      date: '10 févr. 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-    ),
-    MesureEntry(
-      value: '84.0',
-      unit: 'kg',
-      date: '3 févr. 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-    ),
-  ];
+    if (response.statusCode == 200) {
+      final dynamic decoded = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+      if (decoded is List) {
+        return decoded
+            .map(
+              (item) => MesureModel.fromJson(item as Map<String, dynamic>),
+            )
+            .toList();
+      } else if (decoded is Map<String, dynamic>) {
+        return [MesureModel.fromJson(decoded)];
+      } else {
+        throw Exception("Format de réponse inattendu");
+      }
+    } else {
+      throw Exception("Une erreur s'est produite");
+    }
+  }
 
-  // IMC kg/m²
-  final List<MesureEntry> _imcHistory = [
-    MesureEntry(
-      value: '30.3',
-      unit: 'kg/m²',
-      date: '10 mars 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-      subtitle: 'Obésité',
-    ),
-    MesureEntry(
-      value: '30.5',
-      unit: 'kg/m²',
-      date: '3 mars 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-      subtitle: 'Obésité',
-    ),
-    MesureEntry(
-      value: '30.9',
-      unit: 'kg/m²',
-      date: '24 févr. 2026',
-      statusLabel: 'Élevé',
-      statusColor: Color(0xFFE74C3C),
-      statusBg: Color(0xFFFFEAEA),
-      subtitle: 'Obésité',
-    ),
-    MesureEntry(
-      value: '30.8',
-      unit: 'kg/m²',
-      date: '17 févr. 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-      subtitle: 'Obésité',
-    ),
-    MesureEntry(
-      value: '30.7',
-      unit: 'kg/m²',
-      date: '10 févr. 2026',
-      statusLabel: 'Attention',
-      statusColor: Color(0xFFF39C12),
-      statusBg: Color(0xFFFFF2CC),
-      subtitle: 'Obésité',
-    ),
-    MesureEntry(
-      value: '30.9',
-      unit: 'kg/m²',
-      date: '3 févr. 2026',
-      statusLabel: 'Élevé',
-      statusColor: Color(0xFFE74C3C),
-      statusBg: Color(0xFFFFEAEA),
-      subtitle: 'Obésité',
-    ),
-  ];
-
-  // ── Labels des onglets ──────────────────────────────────────────────────
+  Map<String, dynamic> _getStatusColors(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'normal':
+        return {
+          'label': 'Normal',
+          'color': const Color(0xFF27AE60),
+          'bg': const Color(0xFFE8F5E9),
+        };
+      case 'attention':
+        return {
+          'label': 'Attention',
+          'color': const Color(0xFFF39C12),
+          'bg': const Color(0xFFFFF2CC),
+        };
+      case 'élevé':
+      case 'eleve':
+      case 'éleve':
+        return {
+          'label': 'Élevé',
+          'color': const Color(0xFFE74C3C),
+          'bg': const Color(0xFFFFEAEA),
+        };
+      default:
+        return {
+          'label': status ?? '—',
+          'color': Colors.grey,
+          'bg': Colors.grey.shade100,
+        };
+    }
+  }
 
   final List<Map<String, dynamic>> _tabs = [
     {'icon': Icons.favorite_border, 'label': 'PA'},
@@ -320,222 +129,6 @@ class _MesurePageState extends State<MesurePage> {
     {'icon': Icons.scale_outlined, 'label': 'Poids'},
     {'icon': Icons.calculate_outlined, 'label': 'IMC'},
   ];
-
-  // ── Données graphique par onglet ────────────────────────────────────────
-
-  List<String> get _chartDates => [
-    '04 févr.',
-    '11 févr.',
-    '18 févr.',
-    '25 févr.',
-    '04 mars',
-    '11 mars',
-  ];
-
-  List<LineChartBarData> get _chartLines {
-    switch (_selectedTab) {
-      case 0: // PA
-        return [
-          _line([140, 126, 130, 142, 128, 135], Color(0xFF27AE60)),
-          _line([88, 80, 84, 92, 82, 85], Color(0xFF3498DB)),
-        ];
-      case 1: // Pouls
-        return [
-          _line([80, 105, 72, 95, 82, 78], Color(0xFFE74C3C)),
-        ];
-      case 2: // Glycémie ×100 pour affichage
-        return [
-          _line([1.20, 1.52, 1.08, 1.85, 1.42, 1.15], Color(0xFFF39C12)),
-        ];
-      case 3: // Poids
-        return [
-          _line([84.0, 83.5, 83.8, 84.2, 83.0, 82.5], Color(0xFF9B59B6)),
-        ];
-      case 4: // IMC
-        return [
-          _line([30.9, 30.7, 30.8, 30.9, 30.5, 30.3], Color(0xFF3498DB)),
-        ];
-      default:
-        return [];
-    }
-  }
-
-  double get _chartMinY {
-    switch (_selectedTab) {
-      case 0:
-        return 60;
-      case 1:
-        return 0;
-      case 2:
-        return 0;
-      case 3:
-        return 70;
-      case 4:
-        return 25;
-      default:
-        return 0;
-    }
-  }
-
-  double get _chartMaxY {
-    switch (_selectedTab) {
-      case 0:
-        return 160;
-      case 1:
-        return 120;
-      case 2:
-        return 3;
-      case 3:
-        return 100;
-      case 4:
-        return 40;
-      default:
-        return 100;
-    }
-  }
-
-  String get _chartTitle {
-    switch (_selectedTab) {
-      case 0:
-        return 'Évolution — Pression Artérielle';
-      case 1:
-        return 'Évolution — Fréquence cardiaque';
-      case 2:
-        return 'Évolution — Glycémie à jeun';
-      case 3:
-        return 'Évolution — Poids';
-      case 4:
-        return 'Évolution — IMC';
-      default:
-        return 'Évolution';
-    }
-  }
-
-  // ── Dernière valeur affichée sur la carte principale ────────────────────
-
-  String get _mainValue {
-    switch (_selectedTab) {
-      case 0:
-        return '135/85';
-      case 1:
-        return '78';
-      case 2:
-        return '1.15';
-      case 3:
-        return '82.5';
-      case 4:
-        return '30.3';
-      default:
-        return '—';
-    }
-  }
-
-  String get _mainUnit {
-    switch (_selectedTab) {
-      case 0:
-        return 'mmHg';
-      case 1:
-        return 'bpm';
-      case 2:
-        return 'g/L';
-      case 3:
-        return 'kg';
-      case 4:
-        return 'kg/m²';
-      default:
-        return '';
-    }
-  }
-
-  String get _mainDate {
-    switch (_selectedTab) {
-      case 0:
-        return '11 mars 2026';
-      case 1:
-        return '11 mars 2026';
-      case 2:
-        return '10 mars 2026';
-      case 3:
-        return '10 mars 2026';
-      case 4:
-        return '10 mars 2026';
-      default:
-        return '';
-    }
-  }
-
-  Map<String, dynamic> get _mainStatus {
-    switch (_selectedTab) {
-      case 0:
-        return {
-          'label': 'Attention',
-          'color': Color(0xFFF39C12),
-          'bg': Color(0xFFFFF2CC),
-        };
-      case 1:
-        return {
-          'label': 'Normal',
-          'color': Color(0xFF27AE60),
-          'bg': Color(0xFFE8F5E9),
-        };
-      case 2:
-        return {
-          'label': 'Normal',
-          'color': Color(0xFF27AE60),
-          'bg': Color(0xFFE8F5E9),
-        };
-      case 3:
-        return {
-          'label': 'Attention',
-          'color': Color(0xFFF39C12),
-          'bg': Color(0xFFFFF2CC),
-        };
-      case 4:
-        return {
-          'label': 'Attention',
-          'color': Color(0xFFF39C12),
-          'bg': Color(0xFFFFF2CC),
-        };
-      default:
-        return {'label': '—', 'color': Colors.grey, 'bg': Colors.grey.shade100};
-    }
-  }
-
-  IconData get _mainIcon {
-    switch (_selectedTab) {
-      case 0:
-        return Icons.favorite;
-      case 1:
-        return Icons.favorite_border;
-      case 2:
-        return Icons.opacity;
-      case 3:
-        return Icons.scale_outlined;
-      case 4:
-        return Icons.calculate_outlined;
-      default:
-        return Icons.monitor_heart_outlined;
-    }
-  }
-
-  String get _mainLabel {
-    switch (_selectedTab) {
-      case 0:
-        return 'Pression Artérielle';
-      case 1:
-        return 'Fréquence cardiaque';
-      case 2:
-        return 'Glycémie à jeun';
-      case 3:
-        return 'Poids';
-      case 4:
-        return 'IMC';
-      default:
-        return '';
-    }
-  }
-
-  // ── Build ───────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -548,7 +141,7 @@ class _MesurePageState extends State<MesurePage> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Mes mesures',
               style: TextStyle(
                 fontSize: 18,
@@ -563,117 +156,236 @@ class _MesurePageState extends State<MesurePage> {
           ],
         ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Tags pathologies
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  _buildPathologyTag(
-                    'Hypertension',
-                    Color(0xFFFFEAEA),
-                    Color(0xFFE74C3C),
-                    Icons.favorite_border,
-                  ),
-                  SizedBox(width: 10),
-                  _buildPathologyTag(
-                    'Diabète',
-                    Color(0xFFFFF2CC),
-                    Color(0xFFF39C12),
-                    Icons.local_fire_department_outlined,
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 15),
+      body: FutureBuilder<List<MesureModel>>(
+        future: _futureRequest,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            print(snapshot.error);
+            return Center(child: Text("Erreur: ${snapshot.error}"));
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("Aucune donnée disponible"));
+          }
 
-            // Onglets horizontaux
-            SizedBox(
-              height: 45,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _tabs.length,
-                itemBuilder:
-                    (_, i) =>
-                        _buildTabButton(i, _tabs[i]['icon'], _tabs[i]['label']),
-              ),
-            ),
-            SizedBox(height: 10),
-
-            // Contenu scrollable
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 10),
-
-                    // Carte valeur principale
-                    _buildMainValueCard(),
-                    SizedBox(height: 20),
-
-                    // Graphique
-                    _buildEvolutionGraphCard(),
-                    SizedBox(height: 20),
-
-                    // Bouton bilan
-                    SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => BilanPage()),
-                          );
-                        },
-                        icon: Icon(
-                          Icons.assignment_outlined,
-                          color: Colors.white,
-                        ),
-                        label: Text(
-                          'Générer mon bilan de santé',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF27AE60),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 24),
-
-                    // Historique
-                    _buildHistorySection(),
-                    SizedBox(height: 30),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          final data = snapshot.data!.first;
+          return _buildContent(data);
+        },
       ),
     );
   }
 
+  Widget _buildContent(MesureModel data) {
+    return SafeArea(
+      child: Column(
+        children: [
+          // Tags pathologies
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children:
+                  (data.pathologies ?? [])
+                      .map((p) => _buildPathologyTagFromModel(p))
+                      .toList(),
+            ),
+          ),
+          const SizedBox(height: 15),
+
+          // Onglets horizontaux
+          SizedBox(
+            height: 45,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _tabs.length,
+              itemBuilder:
+                  (_, i) =>
+                      _buildTabButton(i, _tabs[i]['icon'], _tabs[i]['label']),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Contenu scrollable
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+
+                  // Carte valeur principale
+                  _buildMainValueCard(data),
+                  const SizedBox(height: 20),
+
+                  // Graphique
+                  _buildEvolutionGraphCard(data),
+                  const SizedBox(height: 20),
+
+                  // Bouton bilan
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => BilanPage()),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.assignment_outlined,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Générer mon bilan de santé',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF27AE60),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Historique
+                  _buildHistorySection(data),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPathologyTagFromModel(Pathologies p) {
+    Color bgColor = const Color(0xFFFFF2CC);
+    Color textColor = const Color(0xFFF39C12);
+    IconData icon = Icons.local_fire_department_outlined;
+
+    if (p.code == 'HTA') {
+      bgColor = const Color(0xFFFFEAEA);
+      textColor = const Color(0xFFE74C3C);
+      icon = Icons.favorite_border;
+    }
+
+    return _buildPathologyTag(p.nom ?? '', bgColor, textColor, icon);
+  }
+
   // ── Historique selon onglet actif ───────────────────────────────────────
 
-  Widget _buildHistorySection() {
+  Widget _buildHistorySection(MesureModel data) {
+    List<Widget> rows = [];
+    switch (_selectedTab) {
+      case 0:
+        rows =
+            (data.pressionArterielle?.historyPression ?? [])
+                .map((e) => _buildPaHistoryRow(e))
+                .toList();
+        break;
+      case 1:
+        rows =
+            (data.frequenceCardiaque?.historyFrequence ?? [])
+                .map((e) {
+                  final status = _getStatusColors(e.status);
+                  return _buildSimpleHistoryRow(
+                    MesureEntry(
+                      value: e.value?.toString() ?? '—',
+                      unit: e.unit ?? 'bpm',
+                      date: e.date ?? '—',
+                      statusLabel: status['label'],
+                      statusColor: status['color'],
+                      statusBg: status['bg'],
+                    ),
+                    Icons.favorite_border,
+                    const Color(0xFFFFEAEA),
+                    const Color(0xFFE74C3C),
+                  );
+                })
+                .toList();
+        break;
+      case 2:
+        rows =
+            (data.glycemie?.historyGlycemie ?? [])
+                .map((e) {
+                  final status = _getStatusColors(e.status);
+                  return _buildSimpleHistoryRow(
+                    MesureEntry(
+                      value: e.value ?? '—',
+                      unit: e.unit ?? 'g/L',
+                      date: e.date ?? '—',
+                      statusLabel: status['label'],
+                      statusColor: status['color'],
+                      statusBg: status['bg'],
+                      subtitle:
+                          e.isFasting == 1 ? 'À jeun — ${e.date}' : e.date,
+                    ),
+                    Icons.opacity,
+                    const Color(0xFFFFF2CC),
+                    const Color(0xFFF39C12),
+                  );
+                })
+                .toList();
+        break;
+      case 3:
+        rows =
+            (data.poids?.historyPoids ?? [])
+                .map((e) {
+                  final status = _getStatusColors(e.status);
+                  return _buildSimpleHistoryRow(
+                    MesureEntry(
+                      value: e.value ?? '—',
+                      unit: e.unit ?? 'kg',
+                      date: e.date ?? '—',
+                      statusLabel: status['label'],
+                      statusColor: status['color'],
+                      statusBg: status['bg'],
+                    ),
+                    Icons.scale_outlined,
+                    const Color(0xFFF3E5F5),
+                    const Color(0xFF9B59B6),
+                  );
+                })
+                .toList();
+        break;
+      case 4:
+        rows =
+            (data.imc?.historyImc ?? [])
+                .map((e) {
+                  final status = _getStatusColors(e.status);
+                  return _buildImcHistoryRow(
+                    MesureEntry(
+                      value: e.value ?? '—',
+                      unit: e.unit ?? 'kg/m²',
+                      date: e.date ?? '—',
+                      statusLabel: status['label'],
+                      statusColor: status['color'],
+                      statusBg: status['bg'],
+                    ),
+                  );
+                })
+                .toList();
+        break;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Historique',
           style: TextStyle(
             fontSize: 16,
@@ -681,46 +393,18 @@ class _MesurePageState extends State<MesurePage> {
             color: Color(0xFF2C3E50),
           ),
         ),
-        SizedBox(height: 12),
-        if (_selectedTab == 0) ..._paHistory.map((e) => _buildPaHistoryRow(e)),
-        if (_selectedTab == 1)
-          ..._poulsHistory.map(
-            (e) => _buildSimpleHistoryRow(
-              e,
-              Icons.favorite_border,
-              Color(0xFFFFEAEA),
-              Color(0xFFE74C3C),
-            ),
-          ),
-        if (_selectedTab == 2)
-          ..._glycHistory.map(
-            (e) => _buildSimpleHistoryRow(
-              e,
-              Icons.opacity,
-              Color(0xFFFFF2CC),
-              Color(0xFFF39C12),
-            ),
-          ),
-        if (_selectedTab == 3)
-          ..._poidsHistory.map(
-            (e) => _buildSimpleHistoryRow(
-              e,
-              Icons.scale_outlined,
-              Color(0xFFF3E5F5),
-              Color(0xFF9B59B6),
-            ),
-          ),
-        if (_selectedTab == 4)
-          ..._imcHistory.map((e) => _buildImcHistoryRow(e)),
+        const SizedBox(height: 12),
+        ...rows,
       ],
     );
   }
 
   // Ligne PA (systolique/diastolique)
-  Widget _buildPaHistoryRow(Map<String, dynamic> entry) {
+  Widget _buildPaHistoryRow(HistoryPression entry) {
+    final status = _getStatusColors(entry.status);
     return Container(
-      margin: EdgeInsets.only(bottom: 10),
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -728,7 +412,7 @@ class _MesurePageState extends State<MesurePage> {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -737,13 +421,14 @@ class _MesurePageState extends State<MesurePage> {
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Color(0xFFE8F5E9),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.favorite, color: Color(0xFF27AE60), size: 18),
+            child:
+                const Icon(Icons.favorite, color: Color(0xFF27AE60), size: 18),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -751,8 +436,8 @@ class _MesurePageState extends State<MesurePage> {
                 Row(
                   children: [
                     Text(
-                      '${entry['sys']}/${entry['dia']} ',
-                      style: TextStyle(
+                      '${entry.systolic}/${entry.diastolic} ',
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C3E50),
@@ -767,24 +452,24 @@ class _MesurePageState extends State<MesurePage> {
                     ),
                   ],
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
-                  entry['date'],
+                  entry.date ?? '',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
                 ),
               ],
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
-              color: entry['bg'],
+              color: status['bg'],
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              entry['label'],
+              status['label'],
               style: TextStyle(
-                color: entry['color'],
+                color: status['color'],
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -803,8 +488,8 @@ class _MesurePageState extends State<MesurePage> {
     Color iconColor,
   ) {
     return Container(
-      margin: EdgeInsets.only(bottom: 10),
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -812,7 +497,7 @@ class _MesurePageState extends State<MesurePage> {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -824,7 +509,7 @@ class _MesurePageState extends State<MesurePage> {
             decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
             child: Icon(icon, color: iconColor, size: 18),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -833,7 +518,7 @@ class _MesurePageState extends State<MesurePage> {
                   children: [
                     Text(
                       '${e.value} ',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C3E50),
@@ -848,7 +533,7 @@ class _MesurePageState extends State<MesurePage> {
                     ),
                   ],
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   e.subtitle ?? e.date,
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
@@ -857,7 +542,7 @@ class _MesurePageState extends State<MesurePage> {
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
               color: e.statusBg,
               borderRadius: BorderRadius.circular(20),
@@ -879,8 +564,8 @@ class _MesurePageState extends State<MesurePage> {
   // Ligne IMC (affiche le label entre parenthèses)
   Widget _buildImcHistoryRow(MesureEntry e) {
     return Container(
-      margin: EdgeInsets.only(bottom: 10),
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -888,7 +573,7 @@ class _MesurePageState extends State<MesurePage> {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -897,17 +582,17 @@ class _MesurePageState extends State<MesurePage> {
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Color(0xFFE3F2FD),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.calculate_outlined,
               color: Color(0xFF3498DB),
               size: 18,
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -916,7 +601,7 @@ class _MesurePageState extends State<MesurePage> {
                   children: [
                     Text(
                       '${e.value} ',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C3E50),
@@ -930,7 +615,7 @@ class _MesurePageState extends State<MesurePage> {
                       ),
                     ),
                     if (e.subtitle != null) ...[
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
                         '(${e.subtitle})',
                         style: TextStyle(
@@ -941,7 +626,7 @@ class _MesurePageState extends State<MesurePage> {
                     ],
                   ],
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   e.date,
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
@@ -950,7 +635,7 @@ class _MesurePageState extends State<MesurePage> {
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
               color: e.statusBg,
               borderRadius: BorderRadius.circular(20),
@@ -971,11 +656,63 @@ class _MesurePageState extends State<MesurePage> {
 
   // ── Carte valeur principale ─────────────────────────────────────────────
 
-  Widget _buildMainValueCard() {
-    final status = _mainStatus;
+  Widget _buildMainValueCard(MesureModel data) {
+    String value = '—';
+    String unit = '';
+    String date = '';
+    String? statusStr;
+    IconData icon = Icons.monitor_heart_outlined;
+    String label = '';
+
+    switch (_selectedTab) {
+      case 0:
+        value = data.pressionArterielle?.currentPression?.value ?? '—';
+        unit = data.pressionArterielle?.currentPression?.unit ?? 'mmHg';
+        date = data.pressionArterielle?.currentPression?.date ?? '';
+        statusStr = data.pressionArterielle?.currentPression?.status;
+        icon = Icons.favorite;
+        label = 'Pression Artérielle';
+        break;
+      case 1:
+        value =
+            data.frequenceCardiaque?.currentFrequence?.value?.toString() ?? '—';
+        unit = data.frequenceCardiaque?.currentFrequence?.unit ?? 'bpm';
+        date = data.frequenceCardiaque?.currentFrequence?.date ?? '';
+        statusStr = data.frequenceCardiaque?.currentFrequence?.status;
+        icon = Icons.favorite_border;
+        label = 'Fréquence cardiaque';
+        break;
+      case 2:
+        value = data.glycemie?.currentGlycemie?.value ?? '—';
+        unit = data.glycemie?.currentGlycemie?.unit ?? 'g/L';
+        date = data.glycemie?.currentGlycemie?.date ?? '';
+        statusStr = data.glycemie?.currentGlycemie?.status;
+        icon = Icons.opacity;
+        label = 'Glycémie à jeun';
+        break;
+      case 3:
+        value = data.poids?.currentPoids?.value ?? '—';
+        unit = data.poids?.currentPoids?.unit ?? 'kg';
+        date = data.poids?.currentPoids?.date ?? '';
+        statusStr = data.poids?.currentPoids?.status;
+        icon = Icons.scale_outlined;
+        label = 'Poids';
+        break;
+      case 4:
+        value = data.imc?.currentImc?.value ?? '—';
+        unit = data.imc?.currentImc?.unit ?? 'kg/m²';
+        date = data.imc?.currentImc?.date ?? '';
+        statusStr = data.imc?.currentImc?.status;
+        icon = Icons.calculate_outlined;
+        label = 'IMC';
+        break;
+    }
+
+    final status = _getStatusColors(statusStr);
+
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
@@ -983,7 +720,7 @@ class _MesurePageState extends State<MesurePage> {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 20,
-            offset: Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -993,16 +730,16 @@ class _MesurePageState extends State<MesurePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(6),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(
                   color: Color(0xFFE8F5E9),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(_mainIcon, color: Color(0xFF27AE60), size: 18),
+                child: Icon(icon, color: const Color(0xFF27AE60), size: 18),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
-                _mainLabel,
+                label,
                 style: TextStyle(
                   color: Colors.grey.shade600,
                   fontSize: 14,
@@ -1011,10 +748,10 @@ class _MesurePageState extends State<MesurePage> {
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
-            _mainValue,
-            style: TextStyle(
+            value,
+            style: const TextStyle(
               fontSize: 48,
               fontWeight: FontWeight.bold,
               color: Color(0xFF2C3E50),
@@ -1022,12 +759,12 @@ class _MesurePageState extends State<MesurePage> {
             ),
           ),
           Text(
-            _mainUnit,
+            unit,
             style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
               color: status['bg'],
               borderRadius: BorderRadius.circular(20),
@@ -1041,9 +778,9 @@ class _MesurePageState extends State<MesurePage> {
               ),
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(
-            _mainDate,
+            date,
             style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
           ),
         ],
@@ -1053,10 +790,68 @@ class _MesurePageState extends State<MesurePage> {
 
   // ── Graphique d'évolution ───────────────────────────────────────────────
 
-  Widget _buildEvolutionGraphCard() {
+  Widget _buildEvolutionGraphCard(MesureModel data) {
+    List<String> dates = [];
+    List<LineChartBarData> lines = [];
+    double minY = 0;
+    double maxY = 100;
+    String title = 'Évolution';
+
+    switch (_selectedTab) {
+      case 0:
+        final cp = data.pressionArterielle?.chartPression;
+        dates = cp?.labels ?? [];
+        lines = [
+          _line(cp?.systolic ?? [], const Color(0xFF27AE60)),
+          _line(cp?.diastolic ?? [], const Color(0xFF3498DB)),
+        ];
+        minY = 60;
+        maxY = 180;
+        title = 'Évolution — Pression Artérielle';
+        break;
+      case 1:
+        final cf = data.frequenceCardiaque?.chartFrequence;
+        dates = cf?.labels ?? [];
+        lines = [_line(cf?.values ?? [], const Color(0xFFE74C3C))];
+        minY = 40;
+        maxY = 120;
+        title = 'Évolution — Fréquence cardiaque';
+        break;
+      case 2:
+        final cg = data.glycemie?.chartGlycemie;
+        dates = cg?.labels ?? [];
+        final values =
+            cg?.values?.map((v) => double.tryParse(v) ?? 0.0).toList() ?? [];
+        lines = [_line(values, const Color(0xFFF39C12))];
+        minY = 0;
+        maxY = 3;
+        title = 'Évolution — Glycémie à jeun';
+        break;
+      case 3:
+        final cp = data.poids?.chartPoids;
+        dates = cp?.labels ?? [];
+        final values =
+            cp?.values?.map((v) => double.tryParse(v) ?? 0.0).toList() ?? [];
+        lines = [_line(values, const Color(0xFF9B59B6))];
+        minY = 40;
+        maxY = 150;
+        title = 'Évolution — Poids';
+        break;
+      case 4:
+        final ci = data.imc?.chartImc;
+        dates = ci?.labels ?? [];
+        final values =
+            ci?.values?.map((v) => double.tryParse(v) ?? 0.0).toList() ?? [];
+        lines = [_line(values, const Color(0xFF3498DB))];
+        minY = 15;
+        maxY = 45;
+        title = 'Évolution — IMC';
+        break;
+    }
+
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
@@ -1064,7 +859,7 @@ class _MesurePageState extends State<MesurePage> {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 20,
-            offset: Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -1074,10 +869,10 @@ class _MesurePageState extends State<MesurePage> {
           Row(
             children: [
               Icon(Icons.timeline, color: Colors.grey.shade500, size: 20),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
-                _chartTitle,
-                style: TextStyle(
+                title,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                   color: Color(0xFF2C3E50),
@@ -1085,7 +880,7 @@ class _MesurePageState extends State<MesurePage> {
               ),
             ],
           ),
-          SizedBox(height: 25),
+          const SizedBox(height: 25),
           SizedBox(
             height: 180,
             child: LineChart(
@@ -1101,10 +896,10 @@ class _MesurePageState extends State<MesurePage> {
                       ),
                 ),
                 titlesData: FlTitlesData(
-                  rightTitles: AxisTitles(
+                  rightTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
                   ),
-                  topTitles: AxisTitles(
+                  topTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
                   ),
                   leftTitles: AxisTitles(
@@ -1127,11 +922,13 @@ class _MesurePageState extends State<MesurePage> {
                       reservedSize: 28,
                       getTitlesWidget: (value, _) {
                         final i = value.toInt();
-                        if (i < 0 || i >= _chartDates.length) return SizedBox();
+                        if (i < 0 || i >= dates.length) {
+                          return const SizedBox();
+                        }
                         return Padding(
-                          padding: EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.only(top: 8),
                           child: Text(
-                            _chartDates[i],
+                            dates[i],
                             style: TextStyle(
                               color: Colors.grey.shade400,
                               fontSize: 10,
@@ -1144,10 +941,10 @@ class _MesurePageState extends State<MesurePage> {
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
-                maxX: 5,
-                minY: _chartMinY,
-                maxY: _chartMaxY,
-                lineBarsData: _chartLines,
+                maxX: (dates.isEmpty ? 5 : dates.length - 1).toDouble(),
+                minY: minY,
+                maxY: maxY,
+                lineBarsData: lines,
               ),
             ),
           ),
@@ -1192,16 +989,17 @@ class _MesurePageState extends State<MesurePage> {
     IconData icon,
   ) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: textColor.withValues(alpha: 0.3)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: textColor),
-          SizedBox(width: 6),
+          const SizedBox(width: 6),
           Text(
             label,
             style: TextStyle(
@@ -1220,10 +1018,10 @@ class _MesurePageState extends State<MesurePage> {
     return GestureDetector(
       onTap: () => setState(() => _selectedTab = index),
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 4),
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? Color(0xFF27AE60) : Colors.white,
+          color: isSelected ? const Color(0xFF27AE60) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.transparent : Colors.grey.shade200,
@@ -1234,13 +1032,13 @@ class _MesurePageState extends State<MesurePage> {
             Icon(
               icon,
               size: 18,
-              color: isSelected ? Colors.white : Color(0xFF7F8C8D),
+              color: isSelected ? Colors.white : const Color(0xFF7F8C8D),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : Color(0xFF2C3E50),
+                color: isSelected ? Colors.white : const Color(0xFF2C3E50),
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),

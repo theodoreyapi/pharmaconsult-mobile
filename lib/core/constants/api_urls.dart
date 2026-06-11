@@ -101,4 +101,13 @@ class ApiUrls {
   static String postUpdateVaccinationByProfile(int profileId, String userId, int vaccinationId) => "$internal/health-profiles/$profileId/vaccinations/$vaccinationId?id_user=$userId";
   static String postCreateVaccinationByProfile(int profileId) => "$internal/health-profiles/$profileId/vaccinations";
   static String deleteVaccinationByProfile(int profileId, String userId, int vaccinationId) => "$internal/health-profiles/$profileId/vaccinations/$vaccinationId?id_user=$userId";
+
+  // PROFIL SUIVI SANTE
+  static String getListMesure(String identifiant) => "$internal/patients/$identifiant/dashboard-mesures";
+  static String getListBilan(String identifiant, String start, String end) => "$internal/patients/$identifiant/bilan?start_date=$start&end_date=$end";
+  static String getListTraitement(String identifiant) => "$internal/patients/$identifiant/traitements";
+  static String getRappel(String identifiant) => "$internal/patients/$identifiant/rappel";
+  static String getNotification(String identifiant) => "$internal/patients/$identifiant/notifications";
+  static String getPharmacyByPatient(String identifiant) => "$internal/patients/$identifiant/pharmacy";
+  static String getVerifyPatient(String cmu) => "$internal/patients/cmu/$cmu";
 }

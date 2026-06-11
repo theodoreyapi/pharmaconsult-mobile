@@ -49,7 +49,11 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   webview_flutter: ^4.13.0
   audioplayers: ^6.5.1
+  syncfusion_flutter_pdf: ^33.2.12
   syncfusion_flutter_pdfviewer: ^33.1.44
+  path_provider: ^2.1.5
+  screenshot: ^3.0.0
+  gal: ^2.3.1
   flutter_local_notifications: ^21.0.0
   app_links: ^7.0.0
   fl_chart: ^1.2.0

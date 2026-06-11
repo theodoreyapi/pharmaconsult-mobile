@@ -457,7 +457,7 @@ class _HomePageState extends State<HomePage> {
                               assetPath: "assets/svg/suivi.svg",
                               argument: "Suivi sante",
                               page: MenusantePage(),
-                              isDisabled: false,
+                              isDisabled: !isModuleActive(subs, "Suivi sante"),
                             ),
                           ];
 
@@ -624,13 +624,6 @@ class _HomePageState extends State<HomePage> {
           );
           return;
         }
-        if (argument == "Suivi sante") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => pageToOpen),
-          );
-          return;
-        }
 
         // ✅ Cas 2 : Pas connecté → page de connexion
         if (!isLoggedIn) {
@@ -661,6 +654,15 @@ class _HomePageState extends State<HomePage> {
                 (context) => AbonnementPage(title: title, argument: argument),
           );
           return;
+        }
+
+        // ✅ Cas Spécifique : Suivi Santé → Vérification CMU/Session
+        if (argument == "Suivi sante") {
+          final patientId = SharedPreferencesHelper().getString("patient_id");
+          if (patientId == null || patientId.isEmpty) {
+            _showCmuVerificationPopup(context, pageToOpen);
+            return;
+          }
         }
 
         // ✅ Cas 4 : Connecté + abonnement actif → vérification live
@@ -751,6 +753,188 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showCmuVerificationPopup(BuildContext context, Widget pageToOpen) {
+    final TextEditingController cmuController = TextEditingController();
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              title: Row(
+                children: [
+                  Icon(Icons.security, color: Colors.green),
+                  SizedBox(width: 10),
+                  Text("Vérification CMU"),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Pour accéder à votre suivi de santé, veuillez saisir votre "
+                    "numéro de sécurité sociale (CMU).",
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  SizedBox(height: 20),
+                  TextField(
+                    controller: cmuController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: "Numéro de sécurité social (CMU)",
+                      hintText: "Ex: 384752...",
+                      prefixIcon: Icon(Icons.badge_outlined),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "ANNULER",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed:
+                      isLoading
+                          ? null
+                          : () async {
+                            final cmu = cmuController.text.trim();
+                            if (cmu.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Veuillez saisir votre CMU"),
+                                ),
+                              );
+                              return;
+                            }
+
+                            setState(() => isLoading = true);
+
+                            try {
+                              final response = await http.get(
+                                Uri.parse(ApiUrls.getVerifyPatient(cmu)),
+                                headers: {'Content-Type': 'application/json'},
+                              );
+
+                              if (response.statusCode == 200) {
+                                final data = json.decode(
+                                  utf8.decode(response.bodyBytes),
+                                );
+                                if (data != null && data['id'] != null) {
+                                  // Sauvegarde en session
+                                  final prefs = SharedPreferencesHelper();
+                                  prefs.saveString(
+                                    "patient_id",
+                                    data['id'].toString(),
+                                  );
+                                  prefs.saveString(
+                                    "patient_first_name",
+                                    data['first_name'] ?? "",
+                                  );
+                                  prefs.saveString(
+                                    "patient_last_name",
+                                    data['last_name'] ?? "",
+                                  );
+                                  prefs.saveString(
+                                    "patient_phone_number",
+                                    data['phone_number'] ?? "",
+                                  );
+                                  prefs.saveString(
+                                    "patient_cmu",
+                                    data['cmu'] ?? "",
+                                  );
+                                  prefs.saveString(
+                                    "patient_gender",
+                                    data['gender'] ?? "",
+                                  );
+                                  prefs.saveString(
+                                    "patient_birth_date",
+                                    data['birth_date'] ?? "",
+                                  );
+                                  prefs.saveString(
+                                    "patient_city",
+                                    data['city'] ?? "",
+                                  );
+
+                                  if (context.mounted) {
+                                    Navigator.pop(context); // Fermer popup
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => pageToOpen,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Numéro CMU non reconnu"),
+                                      ),
+                                    );
+                                  }
+                                }
+                              } else {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Erreur de vérification"),
+                                    ),
+                                  );
+                                }
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Erreur de connexion"),
+                                  ),
+                                );
+                              }
+                            } finally {
+                              if (mounted) setState(() => isLoading = false);
+                            }
+                          },
+                  child:
+                      isLoading
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Text("VÉRIFIER"),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
