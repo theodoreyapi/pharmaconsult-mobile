@@ -33,7 +33,9 @@ class _MyPharmacyPageState extends State<MyPharmacyPage> {
     );
 
     if (response.statusCode == 200) {
-      return PharmacyModel.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+      return PharmacyModel.fromJson(
+        json.decode(utf8.decode(response.bodyBytes)),
+      );
     } else {
       throw Exception('Erreur lors de la récupération de la pharmacie');
     }
@@ -125,7 +127,10 @@ class _MyPharmacyPageState extends State<MyPharmacyPage> {
                               ),
                               Text(
                                 pharmacy.ownerName ?? '',
-                                style: TextStyle(color: Colors.grey, fontSize: 14),
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
                               ),
                               SizedBox(height: 8),
                               Row(
@@ -133,7 +138,9 @@ class _MyPharmacyPageState extends State<MyPharmacyPage> {
                                   ...List.generate(
                                     5,
                                     (index) => Icon(
-                                      index < (pharmacy.rating ?? 0) ? Icons.star : Icons.star_border,
+                                      index < (pharmacy.rating ?? 0)
+                                          ? Icons.star
+                                          : Icons.star_border,
                                       color: Color(0xFFF1C40F),
                                       size: 16,
                                     ),
@@ -187,7 +194,31 @@ class _MyPharmacyPageState extends State<MyPharmacyPage> {
                         label: 'WhatsApp',
                         color: Color(0xFF16A085),
                         bgColor: Color(0xFFE0F2F1),
-                        onTap: () => _launchUrl('https://wa.me/${pharmacy.whatsapp}'),
+                        onTap: () async {
+                          final cleanNumber = pharmacy.whatsapp!.replaceAll(
+                            RegExp(r'[+\s]'),
+                            '',
+                          );
+
+                          final uri = Uri.parse(
+                            "https://wa.me/225$cleanNumber",
+                          );
+
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          } else {
+                            final webUrl =
+                                "https://web.whatsapp.com/send?phone=225${pharmacy.whatsapp}";
+                            if (await canLaunchUrl(Uri.parse(webUrl))) {
+                              await launchUrl(Uri.parse(webUrl));
+                            } else {
+                              throw "Impossible d'ouvrir WhatsApp";
+                            }
+                          }
+                        },
                       ),
                       SizedBox(width: 12),
                       _buildContactTile(
@@ -232,7 +263,8 @@ class _MyPharmacyPageState extends State<MyPharmacyPage> {
                         Divider(height: 1, indent: 60),
                         _buildInfoRow(
                           icon: Icons.access_time_outlined,
-                          title: 'Ouvert de ${pharmacy.openingHours} à ${pharmacy.closingHours}',
+                          title:
+                              'Ouvert de ${pharmacy.openingHours} à ${pharmacy.closingHours}',
                           subtitle: 'Horaires d\'ouverture',
                         ),
                       ],
@@ -255,7 +287,10 @@ class _MyPharmacyPageState extends State<MyPharmacyPage> {
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(2.w),
-                        border: Border.all(width: .5, color: Colors.grey.shade300)
+                        border: Border.all(
+                          width: .5,
+                          color: Colors.grey.shade300,
+                        ),
                       ),
                       child: Column(
                         children: [
@@ -274,7 +309,8 @@ class _MyPharmacyPageState extends State<MyPharmacyPage> {
                             ),
                           ),
                           TextButton(
-                            onPressed: () => _launchUrl(pharmacy.gpsCoordinates ?? ''),
+                            onPressed:
+                                () => _launchUrl(pharmacy.gpsCoordinates ?? ''),
                             child: Text(
                               'Ouvrir dans Google Maps',
                               style: TextStyle(
@@ -319,7 +355,10 @@ class _MyPharmacyPageState extends State<MyPharmacyPage> {
             children: [
               Container(
                 padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(icon, color: color, size: 28),
               ),
               SizedBox(height: 10),

@@ -1,5 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:pharmaconsult/core/constants/api_urls.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
+import 'package:pharmaconsult/core/utils/utils.dart';
+import 'package:pharmaconsult/models/suivisante/conseil_model.dart';
 import 'package:sizer/sizer.dart';
 
 class ConseilsSantePage extends StatefulWidget {
@@ -11,6 +16,7 @@ class ConseilsSantePage extends StatefulWidget {
 
 class _ConseilsSantePageState extends State<ConseilsSantePage> {
   String _selectedCategory = 'Tous';
+  late Future<List<ConseilModel>> _futureConseils;
 
   final List<String> _categories = [
     'Tous',
@@ -19,6 +25,26 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
     'Bien-être',
     'Observance'
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _futureConseils = fetchConseils();
+  }
+
+  Future<List<ConseilModel>> fetchConseils() async {
+    final response = await http.get(
+      Uri.parse(ApiUrls.getConseil),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> decoded = json.decode(utf8.decode(response.bodyBytes));
+      return decoded.map((json) => ConseilModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Erreur lors de la récupération des conseils');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,67 +123,46 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
           const SizedBox(height: 20),
           // List of advice
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildAdviceCard(
-                  category: 'Hypertension',
-                  type: 'Conseil',
-                  title: '5 gestes simples pour contrôler sa tension',
-                  description: 'Réduire le sel, marcher 30 min/jour, bien dormir, éviter le stress et prendre son traitement à l\'heure.',
-                  icon: Icons.favorite_border,
-                  topColor: Colors.green,
-                  iconColor: Colors.green,
-                  iconBg: const Color(0xFFE8F5E9),
-                ),
-                _buildAdviceCard(
-                  category: 'Diabète',
-                  type: 'Article',
-                  title: 'Alimentation et diabète : que manger ?',
-                  description: 'Privilégier les fibres, limiter les sucres rapides, fractionner les repas en 3 repas + 2 collations.',
-                  icon: Icons.water_drop_outlined,
-                  topColor: Colors.blue,
-                  iconColor: Colors.blue,
-                  iconBg: const Color(0xFFE3F2FD),
-                ),
-                _buildAdviceCard(
-                  category: 'Diabète',
-                  type: 'Article',
-                  title: 'L\'importance du contrôle glycémique régulier',
-                  description: 'Un suivi régulier de la glycémie permet de prévenir les complications et d\'adapter le traitement.',
-                  icon: Icons.water_drop_outlined,
-                  topColor: Colors.orange,
-                  iconColor: Colors.orange,
-                  iconBg: const Color(0xFFFFF3E0),
-                ),
-                _buildAdviceCard(
-                  category: 'Bien-être',
-                  type: 'Conseil',
-                  title: 'Activité physique et maladies chroniques',
-                  description: '30 minutes de marche par jour réduisent de 30% le risque cardiovasculaire. Commencez doucement !',
-                  icon: Icons.fitness_center_outlined,
-                  topColor: Colors.purple,
-                  iconColor: Colors.purple,
-                  iconBg: const Color(0xFFF3E5F5),
-                ),
-                _buildAdviceCard(
-                  category: 'Observance',
-                  type: 'Conseil',
-                  title: 'Bien prendre ses médicaments chaque jour',
-                  description: 'Utilisez un pilulier, associez la prise à un geste quotidien, ne doublez jamais une dose oubliée.',
-                  icon: Icons.medication_outlined,
-                  topColor: Colors.pink,
-                  iconColor: Colors.pink,
-                  iconBg: const Color(0xFFFCE4EC),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Ces conseils sont fournis à titre informatif. Consultez toujours votre pharmacien ou médecin pour un avis personnalisé.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                ),
-                const SizedBox(height: 20),
-              ],
+            child: FutureBuilder<List<ConseilModel>>(
+              future: _futureConseils,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Erreur: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('Aucun conseil disponible'));
+                }
+
+                final allConseils = snapshot.data!;
+                final filteredConseils = _selectedCategory == 'Tous'
+                    ? allConseils
+                    : allConseils.where((c) => c.categorie == _selectedCategory).toList();
+
+                if (filteredConseils.isEmpty) {
+                  return const Center(child: Text('Aucun conseil dans cette catégorie'));
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: filteredConseils.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == filteredConseils.length) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Text(
+                          'Ces conseils sont fournis à titre informatif. Consultez toujours votre pharmacien ou médecin pour un avis personnalisé.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        ),
+                      );
+                    }
+
+                    final conseil = filteredConseils[index];
+                    return _buildAdviceCard(conseil);
+                  },
+                );
+              },
             ),
           ),
         ],
@@ -165,16 +170,47 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
     );
   }
 
-  Widget _buildAdviceCard({
-    required String category,
-    required String type,
-    required String title,
-    required String description,
-    required IconData icon,
-    required Color topColor,
-    required Color iconColor,
-    required Color iconBg,
-  }) {
+  Widget _buildAdviceCard(ConseilModel conseil) {
+    Color topColor;
+    IconData icon;
+    Color iconColor;
+    Color iconBg;
+
+    switch (conseil.categorie?.toLowerCase()) {
+      case 'hypertension':
+        topColor = Colors.green;
+        icon = Icons.favorite_border;
+        iconColor = Colors.green;
+        iconBg = const Color(0xFFE8F5E9);
+        break;
+      case 'diabète':
+      case 'diabete':
+        topColor = Colors.blue;
+        icon = Icons.water_drop_outlined;
+        iconColor = Colors.blue;
+        iconBg = const Color(0xFFE3F2FD);
+        break;
+      case 'bien-être':
+      case 'bien-etre':
+      case 'bien etre':
+        topColor = Colors.purple;
+        icon = Icons.fitness_center_outlined;
+        iconColor = Colors.purple;
+        iconBg = const Color(0xFFF3E5F5);
+        break;
+      case 'observance':
+        topColor = Colors.pink;
+        icon = Icons.medication_outlined;
+        iconColor = Colors.pink;
+        iconBg = const Color(0xFFFCE4EC);
+        break;
+      default:
+        topColor = Colors.orange;
+        icon = Icons.info_outline;
+        iconColor = Colors.orange;
+        iconBg = const Color(0xFFFFF3E0);
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -216,20 +252,20 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          category,
+                          conseil.categorie ?? '',
                           style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        type,
+                        conseil.type ?? '',
                         style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    title,
+                    conseil.titre ?? '',
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -238,7 +274,7 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    description,
+                    conseil.description ?? '',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey[600],

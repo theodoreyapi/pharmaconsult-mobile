@@ -7,6 +7,7 @@ import 'package:pharmaconsult/core/themes/themes.dart';
 import 'package:pharmaconsult/core/utils/utils.dart';
 import 'package:pharmaconsult/features/health/mesure/pages/mesure_page.dart';
 import 'package:pharmaconsult/features/health/mypharmacy/pages/my_pharmacy_page.dart';
+import 'package:pharmaconsult/features/health/sante/pages/campagne_sante_page.dart';
 import 'package:pharmaconsult/features/health/sante/pages/conseils_sante_page.dart';
 import 'package:pharmaconsult/features/health/sante/pages/notifications_page.dart';
 import 'package:pharmaconsult/features/health/sociale/sociale.dart';
@@ -183,6 +184,20 @@ class _SantePageState extends State<SantePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => MyPharmacyPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuTile(
+                    icon: Icons.campaign_rounded,
+                    iconColor: const Color(0xFFE67E22),
+                    bgColor: const Color(0xFFFDF2E9),
+                    title: 'Campagnes de santé',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CampagneSantePage(),
                         ),
                       );
                     },
