@@ -878,6 +878,10 @@ class _HomePageState extends State<HomePage> {
                                     "patient_city",
                                     data['city'] ?? "",
                                   );
+                                  prefs.saveString(
+                                    "pharmacieId",
+                                    data['pharmacieId'] ?? "",
+                                  );
 
                                   if (context.mounted) {
                                     Navigator.pop(context); // Fermer popup

@@ -13,17 +13,25 @@ import 'package:pharmaconsult/features/health/sante/pages/notifications_page.dar
 import 'package:pharmaconsult/features/health/sociale/sociale.dart';
 import 'package:pharmaconsult/features/health/traitement/pages/traitement_page.dart';
 import 'package:pharmaconsult/models/suivisante/mesure_model.dart';
+import 'package:pharmaconsult/models/suivisante/pharmacy_model.dart';
 import 'package:sizer/sizer.dart';
 
 class SanteDashboardData {
   final MesureModel mesure;
   final Map<String, dynamic> rappel;
+  final PharmacyModel? pharmacy;
+  final int notificationsCount;
 
-  SanteDashboardData({required this.mesure, required this.rappel});
+  SanteDashboardData({
+    required this.mesure,
+    required this.rappel,
+    this.pharmacy,
+    required this.notificationsCount,
+  });
 }
 
 class SantePage extends StatefulWidget {
-  SantePage({super.key});
+  const SantePage({super.key});
 
   @override
   State<SantePage> createState() => _SantePageState();
@@ -50,10 +58,20 @@ class _SantePageState extends State<SantePage> {
         Uri.parse(ApiUrls.getRappel(patientId)),
         headers: {'Content-Type': 'application/json'},
       ),
+      http.get(
+        Uri.parse(ApiUrls.getPharmacyByPatient(patientId)),
+        headers: {'Content-Type': 'application/json'},
+      ),
+      http.get(
+        Uri.parse(ApiUrls.getNotification(patientId)),
+        headers: {'Content-Type': 'application/json'},
+      ),
     ]);
 
     MesureModel? mesure;
     Map<String, dynamic> rappel = {};
+    PharmacyModel? pharmacy;
+    int notifCount = 0;
 
     if (results[0].statusCode == 200) {
       final decoded = json.decode(utf8.decode(results[0].bodyBytes));
@@ -68,11 +86,28 @@ class _SantePageState extends State<SantePage> {
       rappel = json.decode(utf8.decode(results[1].bodyBytes));
     }
 
+    if (results[2].statusCode == 200) {
+      final decoded = json.decode(utf8.decode(results[2].bodyBytes));
+      pharmacy = PharmacyModel.fromJson(decoded);
+    }
+
+    if (results[3].statusCode == 200) {
+      final List<dynamic> decoded = json.decode(utf8.decode(results[3].bodyBytes));
+      if (decoded.isNotEmpty && decoded[0]['data'] != null) {
+        notifCount = (decoded[0]['data'] as List).length;
+      }
+    }
+
     if (mesure == null) {
       throw Exception('Erreur lors de la récupération des données');
     }
 
-    return SanteDashboardData(mesure: mesure, rappel: rappel);
+    return SanteDashboardData(
+      mesure: mesure,
+      rappel: rappel,
+      pharmacy: pharmacy,
+      notificationsCount: notifCount,
+    );
   }
 
   String _formatDateTime(String? isoDate) {
@@ -105,6 +140,7 @@ class _SantePageState extends State<SantePage> {
           final dashboardData = snapshot.data!;
           final mesureData = dashboardData.mesure;
           final patient = mesureData.patient;
+          final pharmacie = dashboardData.pharmacy;
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -113,7 +149,11 @@ class _SantePageState extends State<SantePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 1. Header (Bonjour Patient)
-                  _buildHeader(patient?.nom ?? 'Utilisateur'),
+                  _buildHeader(
+                    patient?.nom ?? '',
+                    pharmacie?.name ?? '',
+                    dashboardData.notificationsCount,
+                  ),
                   SizedBox(height: 20),
 
                   // 2. Section Mon Suivi (Card principale)
@@ -226,7 +266,7 @@ class _SantePageState extends State<SantePage> {
 
   // --- Composants de l'interface ---
 
-  Widget _buildHeader(String name) {
+  Widget _buildHeader(String name, String s, int notifCount) {
     String initials = '';
     if (name.isNotEmpty) {
       final parts = name.split(' ');
@@ -264,7 +304,7 @@ class _SantePageState extends State<SantePage> {
                 ),
               ),
               Text(
-                'Pharmacie Santé Plus vous accompagne',
+                '$s vous accompagne',
                 style: TextStyle(fontSize: 13, color: Colors.grey[600]),
               ),
             ],
@@ -292,25 +332,26 @@ class _SantePageState extends State<SantePage> {
                   color: Color(0xFF27AE60),
                 ),
               ),
-              Positioned(
-                right: 2,
-                top: 2,
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    '4',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
+              if (notifCount > 0)
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '$notifCount',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

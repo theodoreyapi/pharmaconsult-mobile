@@ -5,7 +5,6 @@ import 'package:pharmaconsult/core/constants/api_urls.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
 import 'package:pharmaconsult/core/utils/utils.dart';
 import 'package:pharmaconsult/models/suivisante/conseil_model.dart';
-import 'package:sizer/sizer.dart';
 
 class ConseilsSantePage extends StatefulWidget {
   const ConseilsSantePage({super.key});
@@ -17,14 +16,7 @@ class ConseilsSantePage extends StatefulWidget {
 class _ConseilsSantePageState extends State<ConseilsSantePage> {
   String _selectedCategory = 'Tous';
   late Future<List<ConseilModel>> _futureConseils;
-
-  final List<String> _categories = [
-    'Tous',
-    'Hypertension',
-    'Diabète',
-    'Bien-être',
-    'Observance'
-  ];
+  List<String> _dynamicCategories = ['Tous'];
 
   @override
   void initState() {
@@ -33,14 +25,30 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
   }
 
   Future<List<ConseilModel>> fetchConseils() async {
+    final patientCmu = SharedPreferencesHelper().getString("patient_cmu") ?? "";
     final response = await http.get(
-      Uri.parse(ApiUrls.getConseil),
+      Uri.parse(ApiUrls.getConseil(patientCmu)),
       headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> decoded = json.decode(utf8.decode(response.bodyBytes));
-      return decoded.map((json) => ConseilModel.fromJson(json)).toList();
+      final List<dynamic> decoded = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+      final List<ConseilModel> conseils =
+          decoded.map((json) => ConseilModel.fromJson(json)).toList();
+
+      // Build dynamic categories from data using 'name' field
+      final Set<String> pathologyNames =
+          conseils
+              .map((c) => c.name ?? '')
+              .where((name) => name.isNotEmpty)
+              .toSet();
+      setState(() {
+        _dynamicCategories = ['Tous', ...pathologyNames];
+      });
+
+      return conseils;
     } else {
       throw Exception('Erreur lors de la récupération des conseils');
     }
@@ -91,9 +99,9 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _categories.length,
+              itemCount: _dynamicCategories.length,
               itemBuilder: (context, index) {
-                final category = _categories[index];
+                final category = _dynamicCategories[index];
                 final isSelected = _selectedCategory == category;
                 return GestureDetector(
                   onTap: () => setState(() => _selectedCategory = category),
@@ -101,10 +109,14 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
                     margin: const EdgeInsets.only(right: 12),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF27AE60) : Colors.white,
+                      color:
+                          isSelected ? const Color(0xFF27AE60) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: isSelected ? Colors.transparent : Colors.grey.shade200,
+                        color:
+                            isSelected
+                                ? Colors.transparent
+                                : Colors.grey.shade200,
                       ),
                     ),
                     alignment: Alignment.center,
@@ -112,7 +124,8 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
                       category,
                       style: TextStyle(
                         color: isSelected ? Colors.white : Colors.grey[600],
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ),
@@ -135,12 +148,17 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
                 }
 
                 final allConseils = snapshot.data!;
-                final filteredConseils = _selectedCategory == 'Tous'
-                    ? allConseils
-                    : allConseils.where((c) => c.categorie == _selectedCategory).toList();
+                final filteredConseils =
+                    _selectedCategory == 'Tous'
+                        ? allConseils
+                        : allConseils
+                            .where((c) => c.name == _selectedCategory)
+                            .toList();
 
                 if (filteredConseils.isEmpty) {
-                  return const Center(child: Text('Aucun conseil dans cette catégorie'));
+                  return const Center(
+                    child: Text('Aucun conseil dans cette catégorie'),
+                  );
                 }
 
                 return ListView.builder(
@@ -153,7 +171,10 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
                         child: Text(
                           'Ces conseils sont fournis à titre informatif. Consultez toujours votre pharmacien ou médecin pour un avis personnalisé.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
                         ),
                       );
                     }
@@ -176,39 +197,48 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
     Color iconColor;
     Color iconBg;
 
-    switch (conseil.categorie?.toLowerCase()) {
-      case 'hypertension':
-        topColor = Colors.green;
-        icon = Icons.favorite_border;
-        iconColor = Colors.green;
-        iconBg = const Color(0xFFE8F5E9);
-        break;
-      case 'diabète':
-      case 'diabete':
-        topColor = Colors.blue;
-        icon = Icons.water_drop_outlined;
-        iconColor = Colors.blue;
-        iconBg = const Color(0xFFE3F2FD);
-        break;
-      case 'bien-être':
-      case 'bien-etre':
-      case 'bien etre':
-        topColor = Colors.purple;
-        icon = Icons.fitness_center_outlined;
-        iconColor = Colors.purple;
-        iconBg = const Color(0xFFF3E5F5);
-        break;
-      case 'observance':
-        topColor = Colors.pink;
-        icon = Icons.medication_outlined;
-        iconColor = Colors.pink;
-        iconBg = const Color(0xFFFCE4EC);
-        break;
-      default:
-        topColor = Colors.orange;
-        icon = Icons.info_outline;
-        iconColor = Colors.orange;
-        iconBg = const Color(0xFFFFF3E0);
+    // Use code or name for styling
+    final code = conseil.code?.toUpperCase() ?? '';
+    final name = conseil.name?.toLowerCase() ?? '';
+
+    if (code == 'HTA' ||
+        name.contains('tension') ||
+        name.contains('hypertension')) {
+      topColor = Colors.green;
+      icon = Icons.favorite_border;
+      iconColor = Colors.green;
+      iconBg = const Color(0xFFE8F5E9);
+    } else if (code == 'DIAB' ||
+        name.contains('diabète') ||
+        name.contains('diabete')) {
+      topColor = Colors.blue;
+      icon = Icons.water_drop_outlined;
+      iconColor = Colors.blue;
+      iconBg = const Color(0xFFE3F2FD);
+    } else if (code == 'CARDIO' || name.contains('cardiaque')) {
+      topColor = Colors.red;
+      icon = Icons.monitor_heart_outlined;
+      iconColor = Colors.red;
+      iconBg = const Color(0xFFFFEAEA);
+    } else if (code == 'RENAL' ||
+        name.contains('rénale') ||
+        name.contains('renale')) {
+      topColor = Colors.teal;
+      icon = Icons.medication_liquid_outlined;
+      iconColor = Colors.teal;
+      iconBg = const Color(0xFFE0F2F1);
+    } else if (code == 'DYSLIP' ||
+        name.contains('cholestérol') ||
+        name.contains('lipide')) {
+      topColor = Colors.orange;
+      icon = Icons.bloodtype_outlined;
+      iconColor = Colors.orange;
+      iconBg = const Color(0xFFFFF3E0);
+    } else {
+      topColor = Colors.purple;
+      icon = Icons.fitness_center_outlined;
+      iconColor = Colors.purple;
+      iconBg = const Color(0xFFF3E5F5);
     }
 
     return Container(
@@ -232,10 +262,7 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: iconBg,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
               child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(width: 16),
@@ -246,14 +273,21 @@ class _ConseilsSantePageState extends State<ConseilsSantePage> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey[100],
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          conseil.categorie ?? '',
-                          style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.bold),
+                          conseil.name ?? '',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),

@@ -8,7 +8,7 @@ import 'package:pharmaconsult/core/utils/utils.dart';
 import 'package:pharmaconsult/models/suivisante/notification_model.dart';
 
 class NotificationsPage extends StatefulWidget {
-  const NotificationsPage({super.key});
+  NotificationsPage({super.key});
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
@@ -69,36 +69,36 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if (type == 'MESURE' || (notif.message?.toLowerCase().contains('mesure') ?? false)) {
       return {
         'icon': Icons.timeline_rounded,
-        'color': const Color(0xFF27AE60),
-        'bg': const Color(0xFFE8F8F0),
+        'color': Color(0xFF27AE60),
+        'bg': Color(0xFFE8F8F0),
         'title': 'Nouvelle mesure',
       };
     } else if (type == 'RENOUVELLEMENT' || (notif.message?.toLowerCase().contains('renouvellement') ?? false)) {
       return {
         'icon': Icons.access_time_rounded,
-        'color': const Color(0xFFF39C12),
-        'bg': const Color(0xFFFEF5E7),
+        'color': Color(0xFFF39C12),
+        'bg': Color(0xFFFEF5E7),
         'title': 'Renouvellement',
       };
     } else if (type == 'CONSEIL') {
       return {
         'icon': Icons.info_outline_rounded,
-        'color': const Color(0xFF9B59B6),
-        'bg': const Color(0xFFF4ECF7),
+        'color': Color(0xFF9B59B6),
+        'bg': Color(0xFFF4ECF7),
         'title': 'Conseil santé',
       };
     } else if (type == 'CAMPAGNE') {
       return {
         'icon': Icons.campaign_outlined,
-        'color': const Color(0xFFE91E63),
-        'bg': const Color(0xFFFCE4EC),
+        'color': Color(0xFFE91E63),
+        'bg': Color(0xFFFCE4EC),
         'title': 'Campagne',
       };
     } else if (notifType == 'RAPPEL' || type == 'PERSONNALISE') {
       return {
         'icon': Icons.notifications_active_outlined,
-        'color': const Color(0xFF4285F4),
-        'bg': const Color(0xFFE8F0FE),
+        'color': Color(0xFF4285F4),
+        'bg': Color(0xFFE8F0FE),
         'title': 'Rappel',
       };
     } else {
@@ -121,18 +121,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
               color: Color(0xFFE8F5E9),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.arrow_back, color: Color(0xFF27AE60)),
+            child: Icon(Icons.arrow_back, color: Color(0xFF27AE60)),
           ),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Notifications',
               style: TextStyle(
                 fontSize: 18,
@@ -157,17 +157,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
         future: _futureNotifications,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Erreur: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Aucune notification pour le moment'));
+            return Center(child: Text('Aucune notification pour le moment'));
           }
 
           final notifications = snapshot.data!;
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             itemCount: notifications.length,
             itemBuilder: (context, index) {
               final notif = notifications[index];
@@ -196,7 +196,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     required Color iconBg,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -204,39 +204,39 @@ class _NotificationsPageState extends State<NotificationsPage> {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: iconBg,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: iconColor, size: 22),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF2C3E50),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         description,
                         style: TextStyle(
@@ -245,7 +245,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           height: 1.4,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -253,7 +253,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             time,
                             style: TextStyle(fontSize: 12, color: Colors.grey[400]),
                           ),
-                          const Text(
+                          Text(
                             'Voir >',
                             style: TextStyle(
                               fontSize: 12,
@@ -269,11 +269,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
               ],
             ),
           ),
-          const Divider(height: 1),
+          Divider(height: 1),
           TextButton.icon(
             onPressed: () {},
-            icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
-            label: const Text('Supprimer', style: TextStyle(color: Colors.grey, fontSize: 13)),
+            icon: Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+            label: Text('Supprimer', style: TextStyle(color: Colors.grey, fontSize: 13)),
           ),
         ],
       ),

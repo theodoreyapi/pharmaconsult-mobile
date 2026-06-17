@@ -34,7 +34,7 @@ class MesureEntry {
 // ─── Page principale ─────────────────────────────────────────────────────────
 
 class MesurePage extends StatefulWidget {
-  const MesurePage({super.key});
+  MesurePage({super.key});
 
   @override
   State<MesurePage> createState() => _MesurePageState();
@@ -96,22 +96,22 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
       case 'normal':
         return {
           'label': 'Normal',
-          'color': const Color(0xFF27AE60),
-          'bg': const Color(0xFFE8F5E9),
+          'color': Color(0xFF27AE60),
+          'bg': Color(0xFFE8F5E9),
         };
       case 'attention':
         return {
           'label': 'Attention',
-          'color': const Color(0xFFF39C12),
-          'bg': const Color(0xFFFFF2CC),
+          'color': Color(0xFFF39C12),
+          'bg': Color(0xFFFFF2CC),
         };
       case 'élevé':
       case 'eleve':
       case 'éleve':
         return {
           'label': 'Élevé',
-          'color': const Color(0xFFE74C3C),
-          'bg': const Color(0xFFFFEAEA),
+          'color': Color(0xFFE74C3C),
+          'bg': Color(0xFFFFEAEA),
         };
       default:
         return {
@@ -141,7 +141,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Mes mesures',
               style: TextStyle(
                 fontSize: 18,
@@ -150,7 +150,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
               ),
             ),
             Text(
-              'Suivi complet — Hypertension & Diabète',
+              'Suivi complet',
               style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
             ),
           ],
@@ -160,14 +160,14 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
         future: _futureRequest,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
             print(snapshot.error);
             return Center(child: Text("Erreur: ${snapshot.error}"));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Aucune donnée disponible"));
+            return Center(child: Text("Aucune donnée disponible"));
           }
 
           final data = snapshot.data!.first;
@@ -183,7 +183,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
         children: [
           // Tags pathologies
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20),
             child: Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -193,38 +193,38 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                       .toList(),
             ),
           ),
-          const SizedBox(height: 15),
+          SizedBox(height: 15),
 
           // Onglets horizontaux
           SizedBox(
             height: 45,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16),
               itemCount: _tabs.length,
               itemBuilder:
                   (_, i) =>
                       _buildTabButton(i, _tabs[i]['icon'], _tabs[i]['label']),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
 
           // Contenu scrollable
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
 
                   // Carte valeur principale
                   _buildMainValueCard(data),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // Graphique
                   _buildEvolutionGraphCard(data),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // Bouton bilan
                   SizedBox(
@@ -237,11 +237,11 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                           MaterialPageRoute(builder: (_) => BilanPage()),
                         );
                       },
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.assignment_outlined,
                         color: Colors.white,
                       ),
-                      label: const Text(
+                      label: Text(
                         'Générer mon bilan de santé',
                         style: TextStyle(
                           fontSize: 16,
@@ -250,7 +250,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF27AE60),
+                        backgroundColor: Color(0xFF27AE60),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -258,11 +258,11 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   // Historique
                   _buildHistorySection(data),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
                 ],
               ),
             ),
@@ -273,13 +273,13 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
   }
 
   Widget _buildPathologyTagFromModel(Pathologies p) {
-    Color bgColor = const Color(0xFFFFF2CC);
-    Color textColor = const Color(0xFFF39C12);
+    Color bgColor = Color(0xFFFFF2CC);
+    Color textColor = Color(0xFFF39C12);
     IconData icon = Icons.local_fire_department_outlined;
 
     if (p.code == 'HTA') {
-      bgColor = const Color(0xFFFFEAEA);
-      textColor = const Color(0xFFE74C3C);
+      bgColor = Color(0xFFFFEAEA);
+      textColor = Color(0xFFE74C3C);
       icon = Icons.favorite_border;
     }
 
@@ -312,8 +312,8 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                       statusBg: status['bg'],
                     ),
                     Icons.favorite_border,
-                    const Color(0xFFFFEAEA),
-                    const Color(0xFFE74C3C),
+                    Color(0xFFFFEAEA),
+                    Color(0xFFE74C3C),
                   );
                 })
                 .toList();
@@ -335,8 +335,8 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                           e.isFasting == 1 ? 'À jeun — ${e.date}' : e.date,
                     ),
                     Icons.opacity,
-                    const Color(0xFFFFF2CC),
-                    const Color(0xFFF39C12),
+                    Color(0xFFFFF2CC),
+                    Color(0xFFF39C12),
                   );
                 })
                 .toList();
@@ -356,8 +356,8 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                       statusBg: status['bg'],
                     ),
                     Icons.scale_outlined,
-                    const Color(0xFFF3E5F5),
-                    const Color(0xFF9B59B6),
+                    Color(0xFFF3E5F5),
+                    Color(0xFF9B59B6),
                   );
                 })
                 .toList();
@@ -385,7 +385,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Historique',
           style: TextStyle(
             fontSize: 16,
@@ -393,7 +393,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
             color: Color(0xFF2C3E50),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         ...rows,
       ],
     );
@@ -403,8 +403,8 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
   Widget _buildPaHistoryRow(HistoryPression entry) {
     final status = _getStatusColors(entry.status);
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -412,7 +412,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
-            offset: const Offset(0, 3),
+            offset: Offset(0, 3),
           ),
         ],
       ),
@@ -421,14 +421,14 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
           Container(
             width: 36,
             height: 36,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: Color(0xFFE8F5E9),
               shape: BoxShape.circle,
             ),
             child:
-                const Icon(Icons.favorite, color: Color(0xFF27AE60), size: 18),
+                Icon(Icons.favorite, color: Color(0xFF27AE60), size: 18),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -437,7 +437,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                   children: [
                     Text(
                       '${entry.systolic}/${entry.diastolic} ',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C3E50),
@@ -452,7 +452,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   entry.date ?? '',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
@@ -461,7 +461,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
               color: status['bg'],
               borderRadius: BorderRadius.circular(20),
@@ -488,8 +488,8 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
     Color iconColor,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -497,7 +497,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
-            offset: const Offset(0, 3),
+            offset: Offset(0, 3),
           ),
         ],
       ),
@@ -509,7 +509,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
             decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
             child: Icon(icon, color: iconColor, size: 18),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -518,7 +518,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                   children: [
                     Text(
                       '${e.value} ',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C3E50),
@@ -533,7 +533,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   e.subtitle ?? e.date,
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
@@ -542,7 +542,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
               color: e.statusBg,
               borderRadius: BorderRadius.circular(20),
@@ -564,8 +564,8 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
   // Ligne IMC (affiche le label entre parenthèses)
   Widget _buildImcHistoryRow(MesureEntry e) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -573,7 +573,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
-            offset: const Offset(0, 3),
+            offset: Offset(0, 3),
           ),
         ],
       ),
@@ -582,17 +582,17 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
           Container(
             width: 36,
             height: 36,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: Color(0xFFE3F2FD),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.calculate_outlined,
               color: Color(0xFF3498DB),
               size: 18,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -601,7 +601,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                   children: [
                     Text(
                       '${e.value} ',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C3E50),
@@ -615,7 +615,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                       ),
                     ),
                     if (e.subtitle != null) ...[
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4),
                       Text(
                         '(${e.subtitle})',
                         style: TextStyle(
@@ -626,7 +626,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                     ],
                   ],
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   e.date,
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
@@ -635,7 +635,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
               color: e.statusBg,
               borderRadius: BorderRadius.circular(20),
@@ -712,7 +712,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
@@ -720,7 +720,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -730,14 +730,14 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
+                padding: EdgeInsets.all(6),
+                decoration: BoxDecoration(
                   color: Color(0xFFE8F5E9),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: const Color(0xFF27AE60), size: 18),
+                child: Icon(icon, color: Color(0xFF27AE60), size: 18),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
@@ -748,10 +748,10 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 48,
               fontWeight: FontWeight.bold,
               color: Color(0xFF2C3E50),
@@ -762,9 +762,9 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
             unit,
             style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
               color: status['bg'],
               borderRadius: BorderRadius.circular(20),
@@ -778,7 +778,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Text(
             date,
             style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
@@ -802,8 +802,8 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
         final cp = data.pressionArterielle?.chartPression;
         dates = cp?.labels ?? [];
         lines = [
-          _line(cp?.systolic ?? [], const Color(0xFF27AE60)),
-          _line(cp?.diastolic ?? [], const Color(0xFF3498DB)),
+          _line(cp?.systolic ?? [], Color(0xFF27AE60)),
+          _line(cp?.diastolic ?? [], Color(0xFF3498DB)),
         ];
         minY = 60;
         maxY = 180;
@@ -812,7 +812,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
       case 1:
         final cf = data.frequenceCardiaque?.chartFrequence;
         dates = cf?.labels ?? [];
-        lines = [_line(cf?.values ?? [], const Color(0xFFE74C3C))];
+        lines = [_line(cf?.values ?? [], Color(0xFFE74C3C))];
         minY = 40;
         maxY = 120;
         title = 'Évolution — Fréquence cardiaque';
@@ -822,7 +822,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
         dates = cg?.labels ?? [];
         final values =
             cg?.values?.map((v) => double.tryParse(v) ?? 0.0).toList() ?? [];
-        lines = [_line(values, const Color(0xFFF39C12))];
+        lines = [_line(values, Color(0xFFF39C12))];
         minY = 0;
         maxY = 3;
         title = 'Évolution — Glycémie à jeun';
@@ -832,7 +832,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
         dates = cp?.labels ?? [];
         final values =
             cp?.values?.map((v) => double.tryParse(v) ?? 0.0).toList() ?? [];
-        lines = [_line(values, const Color(0xFF9B59B6))];
+        lines = [_line(values, Color(0xFF9B59B6))];
         minY = 40;
         maxY = 150;
         title = 'Évolution — Poids';
@@ -842,7 +842,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
         dates = ci?.labels ?? [];
         final values =
             ci?.values?.map((v) => double.tryParse(v) ?? 0.0).toList() ?? [];
-        lines = [_line(values, const Color(0xFF3498DB))];
+        lines = [_line(values, Color(0xFF3498DB))];
         minY = 15;
         maxY = 45;
         title = 'Évolution — IMC';
@@ -851,7 +851,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
@@ -859,7 +859,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -869,10 +869,10 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
           Row(
             children: [
               Icon(Icons.timeline, color: Colors.grey.shade500, size: 20),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                   color: Color(0xFF2C3E50),
@@ -880,7 +880,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
               ),
             ],
           ),
-          const SizedBox(height: 25),
+          SizedBox(height: 25),
           SizedBox(
             height: 180,
             child: LineChart(
@@ -896,10 +896,10 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                       ),
                 ),
                 titlesData: FlTitlesData(
-                  rightTitles: const AxisTitles(
+                  rightTitles: AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
                   ),
-                  topTitles: const AxisTitles(
+                  topTitles: AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
                   ),
                   leftTitles: AxisTitles(
@@ -923,10 +923,10 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
                       getTitlesWidget: (value, _) {
                         final i = value.toInt();
                         if (i < 0 || i >= dates.length) {
-                          return const SizedBox();
+                          return SizedBox();
                         }
                         return Padding(
-                          padding: const EdgeInsets.only(top: 8),
+                          padding: EdgeInsets.only(top: 8),
                           child: Text(
                             dates[i],
                             style: TextStyle(
@@ -989,7 +989,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
     IconData icon,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
@@ -999,7 +999,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: textColor),
-          const SizedBox(width: 6),
+          SizedBox(width: 6),
           Text(
             label,
             style: TextStyle(
@@ -1018,10 +1018,10 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: () => setState(() => _selectedTab = index),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        margin: EdgeInsets.symmetric(horizontal: 4),
+        padding: EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF27AE60) : Colors.white,
+          color: isSelected ? Color(0xFF27AE60) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.transparent : Colors.grey.shade200,
@@ -1032,13 +1032,13 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
             Icon(
               icon,
               size: 18,
-              color: isSelected ? Colors.white : const Color(0xFF7F8C8D),
+              color: isSelected ? Colors.white : Color(0xFF7F8C8D),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF2C3E50),
+                color: isSelected ? Colors.white : Color(0xFF2C3E50),
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),

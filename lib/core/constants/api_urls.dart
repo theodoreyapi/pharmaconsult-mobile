@@ -110,6 +110,6 @@ class ApiUrls {
   static String getNotification(String identifiant) => "$internal/patients/$identifiant/notifications";
   static String getPharmacyByPatient(String identifiant) => "$internal/patients/$identifiant/pharmacy";
   static String getVerifyPatient(String cmu) => "$internal/patients/cmu/$cmu";
-  static String get getConseil => "$internal/conseils";
-  static String get getCampagne => "$internal/campagnes";
+  static String getConseil(String cmu) => "$internal/conseils?cmu=$cmu";
+  static String getCampagne(String pharmacieId) => "$internal/campagnes/$pharmacieId";
 }

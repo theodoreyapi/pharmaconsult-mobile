@@ -5,6 +5,8 @@ import 'package:pharmaconsult/core/constants/api_urls.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
 import 'package:pharmaconsult/models/suivisante/campagne_model.dart';
 
+import '../../../../core/utils/utils.dart';
+
 class CampagneSantePage extends StatefulWidget {
   const CampagneSantePage({super.key});
 
@@ -22,13 +24,17 @@ class _CampagneSantePageState extends State<CampagneSantePage> {
   }
 
   Future<List<CampagneModel>> fetchCampagnes() async {
+    final patientPharmacie =
+        SharedPreferencesHelper().getString("pharmacieId") ?? "";
     final response = await http.get(
-      Uri.parse(ApiUrls.getCampagne),
+      Uri.parse(ApiUrls.getCampagne(patientPharmacie)),
       headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> decoded = json.decode(utf8.decode(response.bodyBytes));
+      final List<dynamic> decoded = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       return decoded.map((json) => CampagneModel.fromJson(json)).toList();
     } else {
       throw Exception('Erreur lors de la récupération des campagnes');
@@ -149,7 +155,10 @@ class _CampagneSantePageState extends State<CampagneSantePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
@@ -192,7 +201,11 @@ class _CampagneSantePageState extends State<CampagneSantePage> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Icon(Icons.local_hospital_outlined, size: 16, color: Colors.grey[400]),
+                    Icon(
+                      Icons.local_hospital_outlined,
+                      size: 16,
+                      color: Colors.grey[400],
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -203,7 +216,10 @@ class _CampagneSantePageState extends State<CampagneSantePage> {
                     if (campagne.pathologieName != null) ...[
                       const SizedBox(width: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF1F9F6),
                           borderRadius: BorderRadius.circular(8),
