@@ -679,36 +679,6 @@ class _VaccineCard extends StatelessWidget {
     return '${formatPrice(price)} ${vaccine.currency ?? 'FCFA'}';
   }
 
-  String get _privatePriceFormatted {
-    final min = vaccine.privatePriceMin;
-    final max = vaccine.privatePriceMax;
-    final cur = vaccine.currency ?? 'FCFA';
-
-    if (min == null && max == null) {
-      return 'N/A';
-    }
-
-    if (min == null) {
-      return '${formatPrice(max)} $cur';
-    }
-
-    if (max == null) {
-      return '${formatPrice(min)} $cur';
-    }
-
-    return '${formatPrice(min)} - ${formatPrice(max)} $cur';
-  }
-
-  String get _savingsNote {
-    final max = vaccine.privatePriceMax;
-
-    if (max != null && max != '0' && max != '0.00') {
-      return "Economisez jusqu'a ${formatPrice(max)} ${vaccine.currency ?? 'FCFA'} en allant dans un centre public";
-    }
-
-    return "Tarif réduit disponible dans les centres de santé publics";
-  }
-
   String get _importantInfoText {
     final info = vaccine.importantInfo;
     if (info != null && info.isNotEmpty) return info;
@@ -774,14 +744,6 @@ class _VaccineCard extends StatelessWidget {
                   ),
                 ),
                 Gap(2.w),
-                Expanded(
-                  child: _priceBox(
-                    "Centre Prive",
-                    _privatePriceFormatted,
-                    Color(0xFFEBF4FF),
-                    Colors.blue,
-                  ),
-                ),
               ],
             ),
           ],
@@ -791,13 +753,6 @@ class _VaccineCard extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Column(
               children: [
-                _infoNote(
-                  Color(0xFFFFFBE6),
-                  Color(0xFFD48806),
-                  "Comparaison Public vs Prive",
-                  _savingsNote,
-                ),
-                SizedBox(height: 8),
                 _infoNote(
                   Color(0xFFE6F7FF),
                   Color(0xFF1890FF),
@@ -1029,26 +984,6 @@ class _ReservationModalState extends State<_ReservationModal> {
     return '${formatPrice(p)} ${widget.vaccine.currency ?? 'FCFA'}';
   }
 
-  String get _privatePriceDisplay {
-    final min = widget.vaccine.privatePriceMin;
-    final max = widget.vaccine.privatePriceMax;
-    final cur = widget.vaccine.currency ?? 'FCFA';
-
-    if (min == null && max == null) {
-      return 'N/A';
-    }
-
-    if (min == null) {
-      return '${formatPrice(max)} $cur';
-    }
-
-    if (max == null) {
-      return '${formatPrice(min)} $cur';
-    }
-
-    return '${formatPrice(min)} - ${formatPrice(max)} $cur';
-  }
-
   String formatPrice(dynamic value) {
     if (value == null) return '0';
 
@@ -1141,10 +1076,6 @@ class _ReservationModalState extends State<_ReservationModal> {
                   SizedBox(height: 4),
                   Text(
                     "Public: $_publicPriceDisplay",
-                    style: TextStyle(fontSize: 13, color: Colors.blue),
-                  ),
-                  Text(
-                    "Prive: $_privatePriceDisplay",
                     style: TextStyle(fontSize: 13, color: Colors.blue),
                   ),
                 ],

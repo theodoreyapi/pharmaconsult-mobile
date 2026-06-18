@@ -8,11 +8,14 @@ import 'package:http/http.dart' as http;
 import 'package:pharmaconsult/core/constants/constants.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
 import 'package:pharmaconsult/core/utils/utils.dart';
+import 'package:pharmaconsult/models/vaccines/profile_model.dart';
 import 'package:sizer/sizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NewProfileSheet extends StatefulWidget {
-  const NewProfileSheet({super.key});
+  final ProfileModel? profile;
+
+  const NewProfileSheet({super.key, this.profile});
 
   @override
   State<NewProfileSheet> createState() => _NewProfileSheetState();
@@ -56,11 +59,38 @@ class _NewProfileSheetState extends State<NewProfileSheet>
   StreamSubscription<Uri>? _linkSubscription;
   final _appLinks = AppLinks();
 
+  bool get isEdit => widget.profile != null;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initDeepLinks();
+    if (isEdit) {
+      _initEditMode();
+    }
+  }
+
+  void _initEditMode() {
+    final p = widget.profile!;
+    _nameController.text = p.name ?? '';
+    _profileType = p.profileType ?? 'human';
+    _selectedGender = p.gender ?? 'masculin';
+    _frequentTraveler = p.isFrequentTraveler ?? false;
+
+    if (_profileType == 'human') {
+      _selectedRelation = p.relation;
+    } else {
+      _selectedAnimalType = p.animalType;
+    }
+
+    if (p.birthDate != null && p.birthDate!.isNotEmpty) {
+      try {
+        final dt = DateTime.parse(p.birthDate!);
+        _birthController.text =
+            '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+      } catch (_) {}
+    }
   }
 
   @override
@@ -134,6 +164,14 @@ class _NewProfileSheetState extends State<NewProfileSheet>
 
   // ── API ───────────────────────────────────────────────────────────────────
 
+  Future<void> _submit() async {
+    if (isEdit) {
+      await _updateProfile();
+    } else {
+      await _createProfile();
+    }
+  }
+
   Future<void> _createProfile() async {
     final error = _validate();
     if (error != null) {
@@ -185,6 +223,55 @@ class _NewProfileSheetState extends State<NewProfileSheet>
         setState(() => _waitingForReturn = true);
 
         await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } else {
+        final msg = _parseError(response.body);
+        _showSnack(msg, isError: true);
+      }
+    } catch (_) {
+      if (mounted) {
+        _showSnack('Erreur réseau. Vérifiez votre connexion.', isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _updateProfile() async {
+    final error = _validate();
+    if (error != null) {
+      _showSnack(error, isError: true);
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      final body = {
+        'name': _nameController.text.trim(),
+        'profile_type': _profileType,
+        'relation': _profileType == 'human' ? _selectedRelation : null,
+        'animal_type': _profileType == 'animal' ? _selectedAnimalType : null,
+        'gender': _selectedGender,
+        'birth_date':
+            _birthController.text.isNotEmpty
+                ? _parseBirthDate(_birthController.text)
+                : null,
+        'is_frequent_traveler': _frequentTraveler,
+      };
+
+      final response = await http.put(
+        Uri.parse(ApiUrls.putUpdateProfile(widget.profile!.idProfile!)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode(body),
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        Navigator.pop(context, true);
+        _showSnack('Profil mis à jour avec succès.');
       } else {
         final msg = _parseError(response.body);
         _showSnack(msg, isError: true);
@@ -300,8 +387,10 @@ class _NewProfileSheetState extends State<NewProfileSheet>
             Gap(2.h),
 
             // ── Facturation ────────────────────────────────────────────
-            _buildBillingSection(),
-            Gap(3.h),
+            if (!isEdit) ...[
+              _buildBillingSection(),
+              Gap(3.h),
+            ],
 
             // ── Boutons ────────────────────────────────────────────────
             _buildActions(),
@@ -324,7 +413,7 @@ class _NewProfileSheetState extends State<NewProfileSheet>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Nouveau profil santé',
+            isEdit ? 'Modifier le profil' : 'Nouveau profil santé',
             style: TextStyle(
               color: appBlack,
               fontWeight: FontWeight.bold,
@@ -332,7 +421,9 @@ class _NewProfileSheetState extends State<NewProfileSheet>
             ),
           ),
           Text(
-            'Remplissez les informations du profil',
+            isEdit
+                ? 'Mettez à jour les informations du profil'
+                : 'Remplissez les informations du profil',
             style: TextStyle(color: Colors.grey.shade500, fontSize: 11.sp),
           ),
         ],
@@ -794,7 +885,7 @@ class _NewProfileSheetState extends State<NewProfileSheet>
         Expanded(
           flex: 2,
           child: ElevatedButton(
-            onPressed: _isSubmitting ? null : _createProfile,
+            onPressed: _isSubmitting ? null : _submit,
             style: ElevatedButton.styleFrom(
               backgroundColor: appColor,
               foregroundColor: Colors.white,
@@ -815,7 +906,7 @@ class _NewProfileSheetState extends State<NewProfileSheet>
                       ),
                     )
                     : Text(
-                      'Créer le profil',
+                      isEdit ? 'Mettre à jour' : 'Créer le profil',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14.sp,

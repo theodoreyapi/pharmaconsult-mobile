@@ -11,7 +11,7 @@ import 'package:sizer/sizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppointmentPage extends StatefulWidget {
-  AppointmentPage({super.key});
+  const AppointmentPage({super.key});
 
   @override
   State<AppointmentPage> createState() => _AppointmentPageState();
@@ -72,7 +72,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF1F5F1),
+      backgroundColor: const Color(0xFFF1F5F1),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -87,7 +87,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
         iconTheme: IconThemeData(color: appColor2),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: _refresh,
             tooltip: "Actualiser",
           ),
@@ -97,7 +97,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
         future: _futureAppointments,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
             return _buildError(snapshot.error.toString());
@@ -113,7 +113,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
 
               // ── Compteur ────────────────────────────────────────────
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
                     Text(
@@ -136,9 +136,9 @@ class _AppointmentPageState extends State<AppointmentPage> {
                         : RefreshIndicator(
                           onRefresh: () async => _refresh(),
                           child: ListView.separated(
-                            padding: EdgeInsets.fromLTRB(16, 0, 16, 24),
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                             itemCount: filtered.length,
-                            separatorBuilder: (_, __) => SizedBox(height: 12),
+                            separatorBuilder: (_, __) => const SizedBox(height: 12),
                             itemBuilder:
                                 (_, i) => _AppointmentCard(
                                   appointment: filtered[i],
@@ -159,7 +159,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
   Widget _buildStatusFilters(List<AppointmentModel> all) {
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -173,12 +173,12 @@ class _AppointmentPageState extends State<AppointmentPage> {
                 final config = _StatusConfig.of(status);
 
                 return Padding(
-                  padding: EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: 8),
                   child: GestureDetector(
                     onTap: () => setState(() => _filterStatus = status),
                     child: AnimatedContainer(
-                      duration: Duration(milliseconds: 180),
-                      padding: EdgeInsets.symmetric(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 7,
                       ),
@@ -205,9 +205,9 @@ class _AppointmentPageState extends State<AppointmentPage> {
                               color: isSelected ? Colors.white : config.color,
                             ),
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Container(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: 5,
                               vertical: 1,
                             ),
@@ -243,7 +243,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
   Widget _buildEmpty(bool noData) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -252,24 +252,24 @@ class _AppointmentPageState extends State<AppointmentPage> {
               size: 56,
               color: Colors.grey.shade300,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               noData
                   ? "Aucune réservation"
                   : "Aucune réservation pour ce statut",
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 color: Colors.grey,
                 fontSize: 16,
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               noData
                   ? "Vos réservations de vaccins apparaîtront ici"
                   : "Essayez un autre filtre",
-              style: TextStyle(color: Colors.grey, fontSize: 13),
+              style: const TextStyle(color: Colors.grey, fontSize: 13),
               textAlign: TextAlign.center,
             ),
           ],
@@ -283,28 +283,28 @@ class _AppointmentPageState extends State<AppointmentPage> {
   Widget _buildError(String error) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.wifi_off, size: 56, color: Colors.grey.shade400),
-            SizedBox(height: 12),
-            Text(
+            const SizedBox(height: 12),
+            const Text(
               "Impossible de charger vos réservations",
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               error,
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: _refresh,
-              icon: Icon(Icons.refresh),
-              label: Text("Réessayer"),
+              icon: const Icon(Icons.refresh),
+              label: const Text("Réessayer"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: appColor2,
                 foregroundColor: Colors.white,
@@ -334,7 +334,7 @@ class _AppointmentCard extends StatelessWidget {
   final AppointmentModel appointment;
   final VoidCallback onTap;
 
-  _AppointmentCard({required this.appointment, required this.onTap});
+  const _AppointmentCard({required this.appointment, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -352,11 +352,11 @@ class _AppointmentCard extends StatelessWidget {
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 6,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        padding: EdgeInsets.all(14),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -371,11 +371,11 @@ class _AppointmentCard extends StatelessWidget {
                     fontFamily: 'monospace',
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 _StatusBadge(config: config),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
 
             // ── Nom du vaccin ────────────────────────────────────────
             Text(
@@ -387,7 +387,7 @@ class _AppointmentCard extends StatelessWidget {
               ),
             ),
             if (appointment.description?.isNotEmpty == true) ...[
-              SizedBox(height: 2),
+              const SizedBox(height: 2),
               Text(
                 appointment.description!,
                 style: TextStyle(fontSize: 12.sp, color: Colors.grey),
@@ -395,7 +395,7 @@ class _AppointmentCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ],
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
 
             // ── Infos pharmacie + date ───────────────────────────────
             Row(
@@ -407,7 +407,7 @@ class _AppointmentCard extends StatelessWidget {
                     color: appColor2,
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 _infoChip(
                   icon: Icons.calendar_today_outlined,
                   text: dateFormatted,
@@ -418,11 +418,11 @@ class _AppointmentCard extends StatelessWidget {
 
             // ── Notes ────────────────────────────────────────────────
             if (appointment.notes?.isNotEmpty == true) ...[
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Icon(Icons.notes, size: 14, color: Colors.grey.shade400),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       appointment.notes!,
@@ -452,7 +452,7 @@ class _AppointmentCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 13, color: color),
-        SizedBox(width: 4),
+        const SizedBox(width: 4),
         Flexible(
           child: Text(
             text,
@@ -475,7 +475,7 @@ class _AppointmentCard extends StatelessWidget {
 class _AppointmentDetailSheet extends StatelessWidget {
   final AppointmentModel appointment;
 
-  _AppointmentDetailSheet({required this.appointment});
+  const _AppointmentDetailSheet({required this.appointment});
 
   @override
   Widget build(BuildContext context) {
@@ -483,11 +483,11 @@ class _AppointmentDetailSheet extends StatelessWidget {
     final dateFormatted = _formatDate(appointment.appointmentDate);
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: EdgeInsets.fromLTRB(20, 16, 20, 32),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -497,7 +497,7 @@ class _AppointmentDetailSheet extends StatelessWidget {
               child: Container(
                 width: 40,
                 height: 4,
-                margin: EdgeInsets.only(bottom: 20),
+                margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(2),
@@ -529,11 +529,11 @@ class _AppointmentDetailSheet extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 _StatusBadge(config: config, large: true),
               ],
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               appointment.reference ?? '',
               style: TextStyle(
@@ -542,11 +542,40 @@ class _AppointmentDetailSheet extends StatelessWidget {
                 fontFamily: 'monospace',
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
+
+            // ── Info Importante ──────────────────────────────────────
+            if (appointment.importantInfo?.isNotEmpty == true) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        appointment.importantInfo!,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.orange.shade900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
 
             // ── Section Patient ──────────────────────────────────────
             _sectionTitle("Patient"),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             _detailRow(
               Icons.person_outline,
               "Nom",
@@ -565,19 +594,19 @@ class _AppointmentDetailSheet extends StatelessWidget {
                 "Email",
                 appointment.patientEmail!,
               ),
-            SizedBox(height: 14),
+            const SizedBox(height: 14),
 
             // ── Section Rendez-vous ──────────────────────────────────
             _sectionTitle("Rendez-vous"),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             _detailRow(Icons.calendar_today_outlined, "Date", dateFormatted),
             if (appointment.notes?.isNotEmpty == true)
               _detailRow(Icons.notes, "Notes", appointment.notes!),
-            SizedBox(height: 14),
+            const SizedBox(height: 14),
 
             // ── Section Pharmacie ────────────────────────────────────
             _sectionTitle("Pharmacie"),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             _detailRow(
               Icons.local_pharmacy_outlined,
               "Nom",
@@ -589,25 +618,25 @@ class _AppointmentDetailSheet extends StatelessWidget {
                 "Adresse",
                 appointment.address!,
               ),
-            if (appointment.openingHours?.isNotEmpty == true)
+            if (appointment.openingHours?.isNotEmpty == true || appointment.closingHours?.isNotEmpty == true)
               _detailRow(
                 Icons.access_time_outlined,
                 "Horaires",
-                appointment.openingHours!,
+                "${appointment.openingHours ?? '—'} - ${appointment.closingHours ?? '—'}",
               ),
 
             // Boutons d'appel
             if (appointment.phoneNumber?.isNotEmpty == true ||
                 appointment.whatsAppPhoneNumber?.isNotEmpty == true) ...[
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   if (appointment.phoneNumber?.isNotEmpty == true)
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _call(appointment.phoneNumber!),
-                        icon: Icon(Icons.phone, size: 16),
-                        label: Text("Appeler"),
+                        icon: const Icon(Icons.phone, size: 16),
+                        label: const Text("Appeler"),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: appColor2,
                           side: BorderSide(color: appColor2),
@@ -619,16 +648,16 @@ class _AppointmentDetailSheet extends StatelessWidget {
                     ),
                   if (appointment.phoneNumber?.isNotEmpty == true &&
                       appointment.whatsAppPhoneNumber?.isNotEmpty == true)
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                   if (appointment.whatsAppPhoneNumber?.isNotEmpty == true)
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed:
                             () => _whatsapp(appointment.whatsAppPhoneNumber!),
-                        icon: Icon(Icons.chat, size: 16),
-                        label: Text("WhatsApp"),
+                        icon: const Icon(Icons.chat, size: 16),
+                        label: const Text("WhatsApp"),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF25D366),
+                          backgroundColor: const Color(0xFF25D366),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -640,35 +669,52 @@ class _AppointmentDetailSheet extends StatelessWidget {
               ),
             ],
 
-            SizedBox(height: 14),
+            const SizedBox(height: 20),
 
             // ── Section Prix ─────────────────────────────────────────
             _sectionTitle("Prix estimatifs"),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _priceBox(
-                    "Centre Public",
-                    _formatPublicPrice(appointment),
-                    Color(0xFFE6FFFA),
-                    Colors.green,
-                  ),
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: _priceBox(
-                    "Centre Privé",
-                    _formatPrivatePrice(appointment),
-                    Color(0xFFEBF4FF),
-                    Colors.blue,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 10),
+            _priceBox(
+              "Centre de santé public",
+              _formatPublicPrice(appointment),
+              const Color(0xFFE6FFFA),
+              Colors.green.shade700,
+              description: "Prix régulé en centre public.",
             ),
+            const SizedBox(height: 12),
+            
+            if (appointment.equivalents != null && appointment.equivalents!.isNotEmpty) ...[
+               Text(
+                "En pharmacie privée",
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...appointment.equivalents!.map((eq) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _priceBox(
+                  eq.name ?? 'Équivalent',
+                  formatPrice(eq.price, currency: appointment.currency ?? 'FCFA'),
+                  const Color(0xFFEBF4FF),
+                  Colors.blue.shade700,
+                  description: eq.description,
+                ),
+              )).toList(),
+            ] else ...[
+               _priceBox(
+                "Pharmacie privée",
+                "Non renseigné",
+                const Color(0xFFEBF4FF),
+                Colors.blue.shade700,
+                description: "Aucun équivalent répertorié pour ce vaccin.",
+              ),
+            ],
 
             // ── Timestamps ───────────────────────────────────────────
-            SizedBox(height: 14),
+            const SizedBox(height: 20),
             if (appointment.confirmedAt?.isNotEmpty == true)
               _detailRow(
                 Icons.check_circle_outline,
@@ -709,12 +755,12 @@ class _AppointmentDetailSheet extends StatelessWidget {
 
   Widget _detailRow(IconData icon, String label, String value, {Color? color}) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 16, color: color ?? Colors.grey.shade500),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(
             "$label : ",
             style: TextStyle(
@@ -734,30 +780,42 @@ class _AppointmentDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _priceBox(String label, String price, Color bgColor, Color textColor) {
+  Widget _priceBox(String label, String price, Color bgColor, Color textColor, {String? description}) {
     return Container(
-      padding: EdgeInsets.all(10),
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: textColor.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: textColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 11.sp, color: Colors.grey.shade600),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(fontSize: 11.sp, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+              ),
+              Text(
+                price,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 2),
-          Text(
-            price,
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.bold,
-              color: textColor,
+          if (description?.isNotEmpty == true) ...[
+            const SizedBox(height: 4),
+            Text(
+              description!,
+              style: TextStyle(fontSize: 10.5.sp, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -782,6 +840,7 @@ class _AppointmentDetailSheet extends StatelessWidget {
     if (value == null) return '0 $currency';
 
     final number = double.tryParse(value.toString()) ?? 0;
+    if (number == 0) return 'GRATUIT';
 
     final formatter = NumberFormat('#,##0', 'fr_FR');
 
@@ -791,29 +850,11 @@ class _AppointmentDetailSheet extends StatelessWidget {
   String _formatPublicPrice(AppointmentModel a) {
     final p = a.publicPrice;
 
-    if (p == null || p == '0' || p == '0.00') {
+    if (p == null || p == '0' || p == '0.00' || p == '0.0') {
       return 'GRATUIT';
     }
 
     return formatPrice(p, currency: a.currency ?? 'FCFA');
-  }
-
-  String _formatPrivatePrice(AppointmentModel a) {
-    final min = a.privatePriceMin;
-    final max = a.privatePriceMax;
-    final cur = a.currency ?? 'FCFA';
-
-    if (min == null && max == null) return 'N/A';
-
-    if (min == null) {
-      return formatPrice(max, currency: cur);
-    }
-
-    if (max == null) {
-      return formatPrice(min, currency: cur);
-    }
-
-    return '${formatPrice(min, currency: cur)} - ${formatPrice(max, currency: cur)}';
   }
 }
 
@@ -823,7 +864,7 @@ class _StatusBadge extends StatelessWidget {
   final _StatusConfig config;
   final bool large;
 
-  _StatusBadge({required this.config, this.large = false});
+  const _StatusBadge({required this.config, this.large = false});
 
   @override
   Widget build(BuildContext context) {
@@ -841,7 +882,7 @@ class _StatusBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(config.icon, size: large ? 14 : 11, color: config.color),
-          SizedBox(width: 4),
+          const SizedBox(width: 4),
           Text(
             config.label,
             style: TextStyle(
@@ -876,26 +917,26 @@ class _StatusConfig {
       case 'confirmed':
         return _StatusConfig(
           label: 'Confirmé',
-          color: Color(0xFF2E7D32),
+          color: const Color(0xFF2E7D32),
           icon: Icons.check_circle_outline,
         );
       case 'completed':
         return _StatusConfig(
           label: 'Terminé',
-          color: Color(0xFF1565C0),
+          color: const Color(0xFF1565C0),
           icon: Icons.done_all,
         );
       case 'cancelled':
         return _StatusConfig(
           label: 'Annulé',
-          color: Color(0xFFC62828),
+          color: const Color(0xFFC62828),
           icon: Icons.cancel_outlined,
         );
       case 'pending':
       default:
         return _StatusConfig(
           label: 'En attente',
-          color: Color(0xFFE65100),
+          color: const Color(0xFFE65100),
           icon: Icons.hourglass_empty,
         );
     }

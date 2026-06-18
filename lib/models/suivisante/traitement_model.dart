@@ -57,7 +57,7 @@ class Traitements {
 class Medicaments {
   int? id;
   String? name;
-  String? dosage;
+  int? dosage;
   int? frequencyPerDay;
   int? quantityDelivered;
   String? dispensedAt;

@@ -5,6 +5,7 @@ import '../../../core/themes/themes.dart';
 import '../../../core/utils/utils.dart';
 import '../../intro/intro.dart';
 import 'auth_screen.dart';
+import '../../menus/menus.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -43,8 +44,11 @@ class _SplashPageState extends State<SplashPage> {
 
     if (nom != null && nom.isNotEmpty) {
       // Utilisateur déjà connu
-      Navigator.of(context).pushReplacement(
+      /*Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const AuthScreen()),
+      );*/
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MenuPage()),
       );
     } else {
       // Nouvel utilisateur

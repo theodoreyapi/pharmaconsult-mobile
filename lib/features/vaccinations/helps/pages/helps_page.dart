@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
 import 'package:sizer/sizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HelpsPage extends StatefulWidget {
   const HelpsPage({super.key});
@@ -238,14 +239,16 @@ class _HelpsPageState extends State<HelpsPage> {
                   _buildContactCard(
                     Icons.phone_outlined,
                     "Appelez-nous",
-                    "+221 33 823 45 67",
+                    "+225 07 14 56 50 80",
                     infoBlue,
+                    onTap: () => makePhoneCall("+2250714565080"),
                   ),
                   _buildContactCard(
                     Icons.email_outlined,
                     "Email",
-                    "support@vaccination.sn",
+                    "infos@pharma-consults.com",
                     appColor,
+                    onTap: () => sendEmail("infos@pharma-consults.com"),
                   ),
                   _buildContactCard(
                     Icons.chat_bubble_outline,
@@ -361,35 +364,63 @@ class _HelpsPageState extends State<HelpsPage> {
     IconData icon,
     String title,
     String subtitle,
-    Color color,
-  ) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 1.h),
-      padding: EdgeInsets.all(3.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(3.w),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color),
-          Gap(1.5.h),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
-              ),
-              Text(
-                subtitle,
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-              ),
-            ],
-          ),
-        ],
+    Color color, {
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(3.w),
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 1.h),
+        padding: EdgeInsets.all(3.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(3.w),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color),
+            Gap(1.5.h),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> makePhoneCall(String phoneNumber) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    }
+  }
+
+  Future<void> sendEmail(String email) async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: email,
+      queryParameters: {'subject': 'Demande d\'assistance Pharma Consults'},
+    );
+
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
+    }
   }
 }

@@ -8,13 +8,12 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:pharmaconsult/core/constants/constants.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
 import 'package:pharmaconsult/core/utils/utils.dart';
+import 'package:pharmaconsult/features/vaccinations/profile/profile.dart';
 import 'package:pharmaconsult/models/vaccines/profile_model.dart';
 import 'package:sizer/sizer.dart';
 
-import '../../../vaccins.dart';
-
 class VaccinPage extends StatefulWidget {
-  VaccinPage({super.key});
+  const VaccinPage({super.key});
 
   @override
   State<VaccinPage> createState() => _VaccinPageState();
@@ -53,12 +52,28 @@ class _VaccinPageState extends State<VaccinPage> {
     throw Exception("Erreur de chargement");
   }
 
+  void _refresh() {
+    setState(() {
+      _futureProfile = _fetchInitialData();
+    });
+  }
+
+  void _showSnack(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? Colors.red : const Color(0xFF2E7D32),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAF8),
+      backgroundColor: const Color(0xFFF8FAF8),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 15.0),
+        padding: const EdgeInsets.symmetric(horizontal: 15.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -67,7 +82,7 @@ class _VaccinPageState extends State<VaccinPage> {
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2D5A27),
+                color: const Color(0xFF2D5A27),
               ),
             ),
             Gap(2.w),
@@ -76,9 +91,9 @@ class _VaccinPageState extends State<VaccinPage> {
             Container(
               padding: EdgeInsets.all(2.w),
               decoration: BoxDecoration(
-                color: Color(0xFFFFF9E7),
+                color: const Color(0xFFFFF9E7),
                 borderRadius: BorderRadius.circular(12),
-                border: Border(
+                border: const Border(
                   left: BorderSide(color: Color(0xFFFBC02D), width: 3),
                 ),
               ),
@@ -87,7 +102,7 @@ class _VaccinPageState extends State<VaccinPage> {
                 children: [
                   Icon(
                     Icons.info_outline,
-                    color: Color(0xFFFBC02D),
+                    color: const Color(0xFFFBC02D),
                     size: 14.sp,
                   ),
                   Gap(2.w),
@@ -99,18 +114,19 @@ class _VaccinPageState extends State<VaccinPage> {
                           'Information importante',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF856404),
-                            fontSize: 13.sp,
+                            color: const Color(0xFF856404),
+                            fontSize: 14.sp,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           'Chaque profil santé est facturé. Un abonnement '
                           'mensuel vous permet de suivre la santé vaccinale '
                           'de chaque membre enregistré (humain ou animal).',
                           style: TextStyle(
-                            color: Color(0xFF856404),
-                            fontSize: 12.sp,
+                            color: const Color(0xFF856404),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -129,17 +145,18 @@ class _VaccinPageState extends State<VaccinPage> {
                 color: appColor,
               ),
               child: ElevatedButton.icon(
-                onPressed: () {
-                  showBarModalBottomSheet(
+                onPressed: () async {
+                  final result = await showBarModalBottomSheet(
                     isDismissible: false,
                     enableDrag: false,
                     expand: true,
                     context: context,
-                    builder: (context) => NewProfileSheet(),
+                    builder: (context) => const NewProfileSheet(),
                   );
+                  if (result == true) _refresh();
                 },
-                icon: Icon(Icons.add, color: Colors.white),
-                label: Text(
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text(
                   'Créer un nouveau profil santé',
                   style: TextStyle(
                     color: Colors.white,
@@ -162,15 +179,44 @@ class _VaccinPageState extends State<VaccinPage> {
                 future: _futureProfile,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator.adaptive());
+                    return const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    );
                   }
                   if (snapshot.hasError) return _buildErrorState();
 
                   return buildProfileListView(
                     profiles: snapshot.data ?? [],
                     context: context,
-                    onEdit: (profile) {},
-                    onDelete: (ctx, profile) {},
+                    onEdit: (profile) async {
+                      final result = await showBarModalBottomSheet(
+                        isDismissible: false,
+                        enableDrag: false,
+                        expand: true,
+                        context: context,
+                        builder: (context) => NewProfileSheet(profile: profile),
+                      );
+                      if (result == true) _refresh();
+                    },
+                    onDelete: (ctx, profile) async {
+                      try {
+                        final response = await http.delete(
+                          Uri.parse(ApiUrls.deleteProfile(profile.idProfile!)),
+                          headers: {'Accept': 'application/json'},
+                        );
+                        if (response.statusCode == 200) {
+                          _showSnack('Profil supprimé avec succès.');
+                          _refresh();
+                        } else {
+                          _showSnack(
+                            'Erreur lors de la suppression.',
+                            isError: true,
+                          );
+                        }
+                      } catch (_) {
+                        _showSnack('Erreur réseau.', isError: true);
+                      }
+                    },
                   );
                 },
               ),
@@ -181,13 +227,8 @@ class _VaccinPageState extends State<VaccinPage> {
       floatingActionButton: FloatingActionButton(
         mini: true,
         backgroundColor: appColor,
-        onPressed: () {
-          final future = _fetchInitialData();
-          setState(() {
-            _futureProfile = future;
-          });
-        },
-        child: Icon(Icons.refresh, color: Colors.white),
+        onPressed: _refresh,
+        child: const Icon(Icons.refresh, color: Colors.white),
       ),
     );
   }
@@ -217,7 +258,7 @@ class _VaccinPageState extends State<VaccinPage> {
   Widget _buildErrorState() {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Text(
           "Une erreur est survenue lors de la récupération des profils."
           "\n\nContactez le support si cela persiste.",
@@ -814,6 +855,8 @@ class _InfoTile extends StatelessWidget {
 }
 
 class _VerticalDivider extends StatelessWidget {
+  const _VerticalDivider();
+
   @override
   Widget build(BuildContext context) {
     return Container(

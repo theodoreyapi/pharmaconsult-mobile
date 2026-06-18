@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
+import 'package:pharmaconsult/features/vaccinations/profile/profile.dart';
 import 'package:pharmaconsult/models/vaccines/profile_model.dart';
 import 'package:sizer/sizer.dart';
-
-import '../../../vaccins.dart';
 
 class ProfileDetailPage extends StatefulWidget {
   final ProfileModel profile;

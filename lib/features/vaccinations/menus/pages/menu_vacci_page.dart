@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pharmaconsult/features/vaccinations/appointment/appointment.dart';
+import 'package:pharmaconsult/features/vaccinations/vaccins.dart';
 
 import '../../../../core/themes/app_colors.dart';
-import '../../pages/pages.dart';
 
 class MenuVacciPage extends StatefulWidget {
   MenuVacciPage({super.key});

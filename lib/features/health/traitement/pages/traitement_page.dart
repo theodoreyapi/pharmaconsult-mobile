@@ -32,6 +32,9 @@ class _TraitementPageState extends State<TraitementPage> {
       headers: {'Content-Type': 'application/json'},
     );
 
+    print(response.statusCode);
+    print(response.body);
+
     if (response.statusCode == 200) {
       return TraitementModel.fromJson(json.decode(utf8.decode(response.bodyBytes)));
     } else {
@@ -121,7 +124,7 @@ class _TraitementPageState extends State<TraitementPage> {
                         ... (section.medicaments ?? []).map((med) {
                           return MedicationCard(
                             name: med.name ?? 'Médicament',
-                            dosage: med.dosage ?? '—',
+                            dosage: med.dosage ?? 0,
                             deliveryDate: med.dispensedAt ?? '—',
                             delayDays: med.delayDays ?? 0,
                             status: med.status ?? '—',
@@ -192,7 +195,7 @@ class _TraitementPageState extends State<TraitementPage> {
 
 class MedicationCard extends StatelessWidget {
   final String name;
-  final String dosage;
+  final int dosage;
   final String deliveryDate;
   final int delayDays;
   final String status;
@@ -279,7 +282,7 @@ class MedicationCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 32),
                   child: Text(
-                    dosage,
+                    '$dosage dose par prise',
                     style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
                 ),
