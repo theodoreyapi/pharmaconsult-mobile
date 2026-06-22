@@ -47,7 +47,7 @@ class _SantePageState extends State<SantePage> {
   }
 
   Future<SanteDashboardData> fetchData() async {
-    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "1";
+    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "";
 
     final results = await Future.wait([
       http.get(

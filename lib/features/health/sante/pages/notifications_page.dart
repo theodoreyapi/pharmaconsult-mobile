@@ -6,9 +6,10 @@ import 'package:pharmaconsult/core/constants/api_urls.dart';
 import 'package:pharmaconsult/core/themes/themes.dart';
 import 'package:pharmaconsult/core/utils/utils.dart';
 import 'package:pharmaconsult/models/suivisante/notification_model.dart';
+import 'package:sizer/sizer.dart';
 
 class NotificationsPage extends StatefulWidget {
-  NotificationsPage({super.key});
+  const NotificationsPage({super.key});
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
@@ -24,7 +25,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<List<NotificationModel>> fetchNotifications() async {
-    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "1";
+    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "";
 
     final response = await http.get(
       Uri.parse(ApiUrls.getNotification(patientId)),
@@ -32,7 +33,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> decoded = json.decode(utf8.decode(response.bodyBytes));
+      final List<dynamic> decoded = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       if (decoded.isNotEmpty && decoded[0]['data'] != null) {
         final List<dynamic> data = decoded[0]['data'];
         return data.map((json) => NotificationModel.fromJson(json)).toList();
@@ -66,14 +69,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final type = notif.type?.toUpperCase();
     final notifType = notif.notificationType?.toUpperCase();
 
-    if (type == 'MESURE' || (notif.message?.toLowerCase().contains('mesure') ?? false)) {
+    if (type == 'MESURE' ||
+        (notif.message?.toLowerCase().contains('mesure') ?? false)) {
       return {
         'icon': Icons.timeline_rounded,
         'color': Color(0xFF27AE60),
         'bg': Color(0xFFE8F8F0),
         'title': 'Nouvelle mesure',
       };
-    } else if (type == 'RENOUVELLEMENT' || (notif.message?.toLowerCase().contains('renouvellement') ?? false)) {
+    } else if (type == 'RENOUVELLEMENT' ||
+        (notif.message?.toLowerCase().contains('renouvellement') ?? false)) {
       return {
         'icon': Icons.access_time_rounded,
         'color': Color(0xFFF39C12),
@@ -111,6 +116,37 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
+  Future<void> _deleteNotification(int id, String type) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiUrls.deleteNotification(id, type)),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Notification supprimée avec succès'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          setState(() {
+            _futureNotifications = fetchNotifications();
+          });
+        }
+      } else {
+        throw Exception('Erreur lors de la suppression');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,18 +157,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: Container(
-            padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
               color: Color(0xFFE8F5E9),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.arrow_back, color: Color(0xFF27AE60)),
+            child: const Icon(Icons.arrow_back, color: Color(0xFF27AE60)),
           ),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Notifications',
               style: TextStyle(
                 fontSize: 18,
@@ -145,7 +181,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
               builder: (context, snapshot) {
                 final count = snapshot.data?.length ?? 0;
                 return Text(
-                  count > 0 ? '$count nouvelle(s) notification(s)' : 'Toutes les notifications sont lues',
+                  count > 0
+                      ? '$count nouvelle(s) notification(s)'
+                      : 'Toutes les notifications sont lues',
                   style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                 );
               },
@@ -157,22 +195,26 @@ class _NotificationsPageState extends State<NotificationsPage> {
         future: _futureNotifications,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Erreur: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('Aucune notification pour le moment'));
+            return const Center(
+              child: Text('Aucune notification pour le moment'),
+            );
           }
 
           final notifications = snapshot.data!;
 
           return ListView.builder(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             itemCount: notifications.length,
             itemBuilder: (context, index) {
               final notif = notifications[index];
               final style = _getStyle(notif);
               return _buildNotificationCard(
+                id: notif.id ?? 0,
+                type: notif.notificationType!,
                 title: style['title'],
                 description: notif.message ?? '',
                 time: _formatDate(notif.createdAt),
@@ -188,55 +230,57 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Widget _buildNotificationCard({
+    required int id,
     required String title,
     required String description,
     required String time,
     required IconData icon,
     required Color iconColor,
     required Color iconBg,
+    required String type,
   }) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(3.w),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: iconBg,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: iconColor, size: 22),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF2C3E50),
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         description,
                         style: TextStyle(
@@ -245,22 +289,25 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           height: 1.4,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             time,
-                            style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[400],
+                            ),
                           ),
-                          Text(
+                          /* Text(
                             'Voir >',
                             style: TextStyle(
                               fontSize: 12,
                               color: Color(0xFF27AE60),
                               fontWeight: FontWeight.bold,
                             ),
-                          ),
+                          ),*/
                         ],
                       ),
                     ],
@@ -269,14 +316,50 @@ class _NotificationsPageState extends State<NotificationsPage> {
               ],
             ),
           ),
-          Divider(height: 1),
+          const Divider(height: 1),
           TextButton.icon(
-            onPressed: () {},
-            icon: Icon(Icons.delete_outline, size: 18, color: Colors.grey),
-            label: Text('Supprimer', style: TextStyle(color: Colors.grey, fontSize: 13)),
+            onPressed: () => _showDeleteConfirmation(id, type),
+            icon: const Icon(
+              Icons.delete_outline,
+              size: 18,
+              color: Colors.grey,
+            ),
+            label: const Text(
+              'Supprimer',
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showDeleteConfirmation(int id, String type) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Supprimer'),
+            content: const Text(
+              'Voulez-vous vraiment supprimer cette notification ?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Annuler'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _deleteNotification(id, type);
+                },
+                child: const Text(
+                  'Supprimer',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
     );
   }
 }

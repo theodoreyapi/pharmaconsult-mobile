@@ -60,7 +60,7 @@ class _MesurePageState extends State<MesurePage> with TickerProviderStateMixin {
   }
 
   Future<List<MesureModel>> fetchRequest() async {
-    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "1";
+    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "";
 
     final http.Response response = await http.get(
       Uri.parse(

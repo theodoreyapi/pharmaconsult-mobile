@@ -25,7 +25,7 @@ class _TraitementPageState extends State<TraitementPage> {
   }
 
   Future<TraitementModel> fetchTraitements() async {
-    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "1";
+    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "";
 
     final response = await http.get(
       Uri.parse(ApiUrls.getListTraitement(patientId)),

@@ -229,6 +229,8 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _showProfilePicker() {
+    final activeProfiles = _profiles.where((p) => p.hasActiveSubscription == true).toList();
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -245,18 +247,22 @@ class _CalendarPageState extends State<CalendarPage> {
                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 15),
-              if (_profiles.isEmpty)
+              if (activeProfiles.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(20.0),
-                  child: Text("Aucun profil trouvé"),
+                  child: Text(
+                    "Aucun profil avec abonnement actif trouvé. "
+                    "Veuillez activer un profil dans l'onglet Profils.",
+                    textAlign: TextAlign.center,
+                  ),
                 )
               else
                 Flexible(
                   child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: _profiles.length,
+                    itemCount: activeProfiles.length,
                     itemBuilder: (context, index) {
-                      final p = _profiles[index];
+                      final p = activeProfiles[index];
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: appColor.withValues(alpha: 0.1),

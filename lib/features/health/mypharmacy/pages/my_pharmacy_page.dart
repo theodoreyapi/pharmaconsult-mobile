@@ -25,7 +25,7 @@ class _MyPharmacyPageState extends State<MyPharmacyPage> {
   }
 
   Future<PharmacyModel> fetchPharmacy() async {
-    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "1";
+    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "";
 
     final response = await http.get(
       Uri.parse(ApiUrls.getPharmacyByPatient(patientId)),

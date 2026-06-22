@@ -24,8 +24,8 @@ class _CampagneSantePageState extends State<CampagneSantePage> {
   }
 
   Future<List<CampagneModel>> fetchCampagnes() async {
-    final patientPharmacie =
-        SharedPreferencesHelper().getString("pharmacieId") ?? "";
+    int patientPharmacie = SharedPreferencesHelper().getInt("pharmacieId")!;
+
     final response = await http.get(
       Uri.parse(ApiUrls.getCampagne(patientPharmacie)),
       headers: {'Content-Type': 'application/json'},

@@ -104,6 +104,7 @@ class ApiUrls {
   static String getCalendarByProfile(int profileId) => "$internal/health-profiles/calendar/$profileId";
   static String get postRemindersByProfile => "$internal/health-profiles/reminders/store";
   static String getRemindersByIdentifiant(String identifiant) => "$internal/health-profiles/reminders-category/$identifiant";
+  static String getAbonnementByProfileUser(int profileId, String identifiant) => "$internal/health-profiles/abonnement/$profileId/$identifiant";
 
   // PROFIL SUIVI SANTE
   static String getListMesure(String identifiant) => "$internal/patients/$identifiant/dashboard-mesures";
@@ -114,5 +115,6 @@ class ApiUrls {
   static String getPharmacyByPatient(String identifiant) => "$internal/patients/$identifiant/pharmacy";
   static String getVerifyPatient(String cmu) => "$internal/patients/cmu/$cmu";
   static String getConseil(String cmu) => "$internal/conseils?cmu=$cmu";
-  static String getCampagne(String pharmacieId) => "$internal/campagnes/$pharmacieId";
+  static String getCampagne(int pharmacieId) => "$internal/campagnes/$pharmacieId";
+  static String deleteNotification(int id, String type) => "$internal/notifications/$id?type=$type";
 }

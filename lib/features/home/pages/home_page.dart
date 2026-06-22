@@ -878,7 +878,7 @@ class _HomePageState extends State<HomePage> {
                                     "patient_city",
                                     data['city'] ?? "",
                                   );
-                                  prefs.saveString(
+                                  prefs.saveInteger(
                                     "pharmacieId",
                                     data['pharmacieId'] ?? "",
                                   );

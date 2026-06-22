@@ -34,7 +34,7 @@ class _BilanPageState extends State<BilanPage> {
   }
 
   Future<Map<String, dynamic>> _fetchAllData() async {
-    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "1";
+    final patientId = SharedPreferencesHelper().getString("patient_id") ?? "";
 
     final results = await Future.wait([
       fetchBilan(patientId),

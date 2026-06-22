@@ -11,6 +11,7 @@ import 'package:pharmaconsult/core/utils/utils.dart';
 import 'package:pharmaconsult/features/vaccinations/profile/profile.dart';
 import 'package:pharmaconsult/models/vaccines/profile_model.dart';
 import 'package:sizer/sizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class VaccinPage extends StatefulWidget {
   const VaccinPage({super.key});
@@ -66,6 +67,83 @@ class _VaccinPageState extends State<VaccinPage> {
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  Future<void> _handleProfileTap(ProfileModel profile) async {
+    final bool isPaid = profile.hasActiveSubscription ?? false;
+
+    if (isPaid) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProfileDetailPage(profile: profile),
+        ),
+      );
+    } else {
+      _showReabonnementDialog(profile);
+    }
+  }
+
+  void _showReabonnementDialog(ProfileModel profile) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            SizedBox(width: 10),
+            Text('Abonnement inactif'),
+          ],
+        ),
+        content: Text(
+          'L\'abonnement pour le profil de ${profile.name} est inactif ou a expiré. '
+          'Souhaitez-vous vous réabonner pour accéder aux détails ?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('NON', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2E7D32),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _initiateRenewal(profile);
+            },
+            child: const Text('OUI'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _initiateRenewal(ProfileModel profile) async {
+    try {
+      final identifiant = SharedPreferencesHelper().getString("identifiant")!;
+      final response = await http.get(
+        Uri.parse(ApiUrls.getAbonnementByProfileUser(profile.idProfile!, identifiant)),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        final url = data['rechargement_url'];
+        if (url != null) {
+          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        } else {
+          _showSnack('URL de paiement introuvable.', isError: true);
+        }
+      } else {
+        _showSnack('Erreur lors de l\'initiation du paiement.', isError: true);
+      }
+    } catch (e) {
+      debugPrint("Error renewal: $e");
+      _showSnack('Erreur réseau. Veuillez réessayer.', isError: true);
+    }
   }
 
   @override
@@ -198,6 +276,7 @@ class _VaccinPageState extends State<VaccinPage> {
                       );
                       if (result == true) _refresh();
                     },
+                    onTap: (profile) => _handleProfileTap(profile),
                     onDelete: (ctx, profile) async {
                       try {
                         final response = await http.delete(
@@ -236,6 +315,7 @@ class _VaccinPageState extends State<VaccinPage> {
   Widget buildProfileListView({
     required List<ProfileModel> profiles,
     required void Function(ProfileModel) onEdit,
+    required void Function(ProfileModel) onTap,
     required void Function(BuildContext, ProfileModel) onDelete,
     required BuildContext context,
   }) {
@@ -250,6 +330,7 @@ class _VaccinPageState extends State<VaccinPage> {
           (ctx, i) => ProfileCard(
             profile: profiles[i],
             onEdit: () => onEdit(profiles[i]),
+            onTap: () => onTap(profiles[i]),
             onDelete: () => showDeleteConfirmation(ctx, profiles[i], onDelete),
           ),
     );
@@ -405,12 +486,14 @@ class ProfileCard extends StatelessWidget {
   final ProfileModel profile;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
   const ProfileCard({
     super.key,
     required this.profile,
     required this.onEdit,
     required this.onDelete,
+    required this.onTap,
   });
 
   @override
@@ -423,13 +506,7 @@ class ProfileCard extends StatelessWidget {
     final subPaid = profile.hasActiveSubscription;
 
     return InkWell(
-      onTap:
-          () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ProfileDetailPage(profile: profile),
-            ),
-          ),
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
