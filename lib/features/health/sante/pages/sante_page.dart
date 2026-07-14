@@ -10,6 +10,7 @@ import 'package:pharmaconsult/features/health/mypharmacy/pages/my_pharmacy_page.
 import 'package:pharmaconsult/features/health/sante/pages/campagne_sante_page.dart';
 import 'package:pharmaconsult/features/health/sante/pages/conseils_sante_page.dart';
 import 'package:pharmaconsult/features/health/sante/pages/notifications_page.dart';
+import 'package:pharmaconsult/features/health/sante/pages/rendez_vous_page.dart';
 import 'package:pharmaconsult/features/health/sociale/sociale.dart';
 import 'package:pharmaconsult/features/health/traitement/pages/traitement_page.dart';
 import 'package:pharmaconsult/models/suivisante/mesure_model.dart';
@@ -182,6 +183,20 @@ class _SantePageState extends State<SantePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => MesurePage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuTile(
+                    icon: Icons.calendar_month_rounded,
+                    iconColor: Color(0xFF26B59F),
+                    bgColor: Color(0xFFE8F8F0),
+                    title: 'Mes rendez-vous',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RendezVousPage(),
                         ),
                       );
                     },

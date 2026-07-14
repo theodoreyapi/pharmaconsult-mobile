@@ -63,7 +63,7 @@ class Medicaments {
   String? dispensedAt;
   String? estimatedEndDate;
   double? daysRemaining;
-  int? delayDays;
+  double? delayDays;
   String? status;
   String? statusColor;
   double? progress;
@@ -90,11 +90,11 @@ class Medicaments {
     quantityDelivered = json['quantity_delivered'];
     dispensedAt = json['dispensed_at'];
     estimatedEndDate = json['estimated_end_date'];
-    daysRemaining = json['days_remaining'];
-    delayDays = json['delay_days'];
+    daysRemaining = json['days_remaining']?.toDouble();
+    delayDays = json['delay_days']?.toDouble();
     status = json['status'];
     statusColor = json['status_color'];
-    progress = json['progress'];
+    progress = json['progress']?.toDouble();
   }
 
   Map<String, dynamic> toJson() {

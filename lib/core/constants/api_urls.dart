@@ -117,4 +117,7 @@ class ApiUrls {
   static String getConseil(String cmu) => "$internal/conseils?cmu=$cmu";
   static String getCampagne(int pharmacieId) => "$internal/campagnes/$pharmacieId";
   static String deleteNotification(int id, String type) => "$internal/notifications/$id?type=$type";
+
+  static String getListPlanning(String identifiant) => "$internal/patients/$identifiant/plannings";
+  static String getListRendezVous(String identifiant) => "$internal/patients/$identifiant/rendez-vous";
 }

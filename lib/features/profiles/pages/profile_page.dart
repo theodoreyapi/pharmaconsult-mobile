@@ -191,7 +191,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 backgroundColor: appWhite,
                                 builder: (BuildContext context) {
                                   return SizedBox(
-                                    height: 300,
+                                    height: 450,
                                     child: Padding(
                                       padding: EdgeInsets.all(4.w),
                                       child: Column(

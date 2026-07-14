@@ -126,7 +126,7 @@ class _TraitementPageState extends State<TraitementPage> {
                             name: med.name ?? 'Médicament',
                             dosage: med.dosage ?? 0,
                             deliveryDate: med.dispensedAt ?? '—',
-                            delayDays: med.delayDays ?? 0,
+                            delayDays: (med.delayDays ?? 0).round(),
                             status: med.status ?? '—',
                             statusColor: _parseColor(med.statusColor),
                             progress: med.progress ?? 0.0,

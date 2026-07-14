@@ -82,7 +82,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
             child: Column(
               children: [
                 Container(
-                  height: 26,
+                  height: 35,
                   decoration: BoxDecoration(
                     color: appColorDivider,
                     borderRadius: BorderRadius.circular(6.w),
