@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -25,7 +26,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: Platform.isIOS ? 3 : 4, vsync: this);
   }
 
   @override
@@ -109,7 +110,7 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                       Tab(text: "Tout"),
                       Tab(text: "Rechargements"),
                       Tab(text: "Transactions"),
-                      Tab(text: "Souscriptions"),
+                      if (!Platform.isIOS) Tab(text: "Souscriptions"),
                     ],
                   ),
                 ),
@@ -134,7 +135,13 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                       return TabBarView(
                         controller: _tabController,
                         children: [
-                          buildTransactionsList(allTransactions),
+                          buildTransactionsList(
+                            Platform.isIOS
+                                ? allTransactions
+                                    .where((t) => t.category != "ABONNEMENT")
+                                    .toList()
+                                : allTransactions,
+                          ),
                           buildTransactionsList(
                             allTransactions
                                 .where((t) => t.category == "RECHARGEMENT")
@@ -145,11 +152,12 @@ class _MoneyPageState extends State<MoneyPage> with TickerProviderStateMixin {
                                 .where((t) => t.category == "TRANSFERT")
                                 .toList(),
                           ),
-                          buildTransactionsList(
-                            allTransactions
-                                .where((t) => t.category == "ABONNEMENT")
-                                .toList(),
-                          ),
+                          if (!Platform.isIOS)
+                            buildTransactionsList(
+                              allTransactions
+                                  .where((t) => t.category == "ABONNEMENT")
+                                  .toList(),
+                            ),
                         ],
                       );
                     },

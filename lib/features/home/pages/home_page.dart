@@ -636,23 +636,27 @@ class _HomePageState extends State<HomePage> {
 
         // ✅ Cas 3 : Connecté mais abonnement inactif → AbonnementPage
         if (isDisabled) {
-          showBarModalBottomSheet(
-            isDismissible: false,
-            enableDrag: false,
-            expand: true,
-            topControl: Align(
-              alignment: Alignment.centerLeft,
-              child: FloatingActionButton.small(
-                backgroundColor: appWhite,
-                shape: const CircleBorder(),
-                onPressed: () => Navigator.of(context).pop(),
-                child: Icon(Icons.close, color: appBlack),
+          if (Platform.isIOS) {
+            _showIosSubscriptionPopup(context);
+          } else {
+            showBarModalBottomSheet(
+              isDismissible: false,
+              enableDrag: false,
+              expand: true,
+              topControl: Align(
+                alignment: Alignment.centerLeft,
+                child: FloatingActionButton.small(
+                  backgroundColor: appWhite,
+                  shape: const CircleBorder(),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Icon(Icons.close, color: appBlack),
+                ),
               ),
-            ),
-            context: context,
-            builder:
-                (context) => AbonnementPage(title: title, argument: argument),
-          );
+              context: context,
+              builder:
+                  (context) => AbonnementPage(title: title, argument: argument),
+            );
+          }
           return;
         }
 
@@ -691,24 +695,28 @@ class _HomePageState extends State<HomePage> {
                 MaterialPageRoute(builder: (context) => pageToOpen),
               );
             } else {
-              showBarModalBottomSheet(
-                isDismissible: false,
-                enableDrag: false,
-                expand: true,
-                topControl: Align(
-                  alignment: Alignment.centerLeft,
-                  child: FloatingActionButton.small(
-                    backgroundColor: appWhite,
-                    shape: const CircleBorder(),
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Icon(Icons.close, color: appBlack),
+              if (Platform.isIOS) {
+                _showIosSubscriptionPopup(context);
+              } else {
+                showBarModalBottomSheet(
+                  isDismissible: false,
+                  enableDrag: false,
+                  expand: true,
+                  topControl: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FloatingActionButton.small(
+                      backgroundColor: appWhite,
+                      shape: const CircleBorder(),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Icon(Icons.close, color: appBlack),
+                    ),
                   ),
-                ),
-                context: context,
-                builder:
-                    (context) =>
-                        AbonnementPage(title: title, argument: argument),
-              );
+                  context: context,
+                  builder:
+                      (context) =>
+                          AbonnementPage(title: title, argument: argument),
+                );
+              }
             }
           } else {
             SnackbarHelper.showError(context, "Erreur serveur");
@@ -753,6 +761,103 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showIosSubscriptionPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.info_outline, color: appColor),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  "Abonnement requis",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Pour accéder à ce service, vous devez disposer d'un abonnement actif.",
+                style: TextStyle(fontSize: 14.sp),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                "Veuillez contacter le service client PHARMACONSULTS pour souscrire :",
+                style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
+              ),
+              SizedBox(height: 1.h),
+              InkWell(
+                onTap: () => launchUrl(Uri.parse("tel:+2252722252547")),
+                child: Row(
+                  children: [
+                    Icon(Icons.phone, color: appColor2, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      "+225 27 22 25 25 47",
+                      style: TextStyle(
+                        color: appColor2,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14.sp,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                "Ou rendez-vous sur notre site web :",
+                style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
+              ),
+              SizedBox(height: 1.h),
+              InkWell(
+                onTap: () => launchUrl(
+                  Uri.parse("https://www.pharma-consults.com"),
+                  mode: LaunchMode.externalApplication,
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.language, color: appColor, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "www.pharma-consults.com",
+                        style: TextStyle(
+                          color: appColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                "FERMER",
+                style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
