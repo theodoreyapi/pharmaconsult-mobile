@@ -272,6 +272,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                               ),
                                             ],
                                           ),
+                                          Gap(10.h),
                                         ],
                                       ),
                                     ),

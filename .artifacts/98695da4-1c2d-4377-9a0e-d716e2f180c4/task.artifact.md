@@ -1,6 +1,3 @@
-- [x] Ajouter `import 'dart:io';` dans `money_page.dart`
-- [x] Ajuster la longueur du `TabController` selon la plateforme
-- [x] Masquer l'onglet "Souscriptions" sur iOS
-- [x] Filtrer les transactions "ABONNEMENT" dans l'onglet "Tout" sur iOS
-- [x] Masquer la vue de l'onglet "Souscriptions" sur iOS
-- [x] Vérifier la cohérence de l'indexation des onglets
+- [ ] Configurer le JDK 17 dans `android/gradle.properties`
+- [ ] Exécuter `flutter clean`
+- [ ] Vérifier le build avec `flutter build apk --debug`
