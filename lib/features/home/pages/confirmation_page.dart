@@ -194,11 +194,62 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                   }
                 },
               ),
+              if (Platform.isIOS) ...[
+                Gap(1.h),
+                SubmitButton(
+                  "S'abonner avec Apple",
+                  fontSize: 18.sp,
+                  height: 6.h,
+                  couleur: Colors.black,
+                  onPressed: () async {
+                    simulateAppleIAP(context);
+                  },
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> simulateAppleIAP(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.apple, size: 60, color: Colors.black),
+              Gap(2.h),
+              Text(
+                "Apple Pay",
+                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+              ),
+              Gap(1.h),
+              const Text(
+                "Confirmation du paiement In-App Purchase...",
+                textAlign: TextAlign.center,
+              ),
+              Gap(3.h),
+              const CircularProgressIndicator(color: Colors.black),
+            ],
+          ),
+        );
+      },
+    );
+
+    await Future.delayed(const Duration(seconds: 3));
+
+    if (context.mounted) {
+      Navigator.pop(context); // Ferme la simulation Apple
+      confirmPass(context); // Procède à l'activation de l'abonnement
+    }
   }
 
   Future<void> confirmPass(BuildContext context) async {
